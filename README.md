@@ -51,7 +51,7 @@ Build an ESG management platform that enables organizations to measure, manage, 
 
 EcoSphere follows a layered web application architecture: a browser-based client renders module-specific HTML pages, which communicate with an Express.js server over REST-style HTTP calls. Business logic and application state are handled in the application layer, data access is mediated through Prisma ORM, and persistence is handled by a MariaDB/MySQL relational database.
 
-![EcoSphere Architecture Diagram](assets/architecture-diagram.png)
+![EcoSphere Architecture Diagram](architecture-diagram.png)
 
 **Layer summary:**
 
@@ -64,7 +64,7 @@ EcoSphere follows a layered web application architecture: a browser-based client
 
 The platform serves four primary actor types, each interacting with a distinct subset of use cases: employees engaging with sustainability activities, department managers overseeing team performance, ESG administrators configuring the platform, and auditors managing compliance.
 
-![EcoSphere Use Case Diagram](assets/use-case-diagram.png)
+![EcoSphere Use Case Diagram](use-case-diagram.png)
 
 | Actor | Primary Use Cases |
 |---|---|
