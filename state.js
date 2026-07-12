@@ -199,11 +199,27 @@ function seedData() {
 const dbStore = {
   load() {
     try {
+      const xhr = new XMLHttpRequest();
+      xhr.open("GET", "/api/data", false); // Synchronous fetch from server
+      xhr.send(null);
+      if (xhr.status === 200) {
+        console.log("Loaded state from MySQL server via Prisma.");
+        const data = JSON.parse(xhr.responseText);
+        // Sync to local storage for caching/fallback
+        try {
+          localStorage.setItem("ecosphere_data", xhr.responseText);
+        } catch (_) {}
+        return data;
+      }
+    } catch (e) {
+      console.error("Failed to load state from MySQL server, falling back to local storage.", e);
+    }
+
+    try {
       const data = localStorage.getItem("ecosphere_data");
       if (data) {
         const parsed = JSON.parse(data);
         const seed = seedData();
-        // Merge missing tables/collections from seedData to avoid crashes on old localstorage
         Object.keys(seed).forEach(key => {
           if (parsed[key] === undefined) {
             parsed[key] = seed[key];
@@ -214,17 +230,55 @@ const dbStore = {
     } catch (e) {
       console.error("Failed to load local storage state", e);
     }
+    
     const seed = seedData();
     this.save(seed);
     return seed;
   },
   save(db) {
+    // Write locally first for instant local responsiveness
     try {
       localStorage.setItem("ecosphere_data", JSON.stringify(db));
     } catch (e) {
       console.error("Failed to save local storage state", e);
     }
+
+    // Save to server in background
+    fetch("/api/data", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(db)
+    }).then(res => {
+      if (!res.ok) {
+        console.error("Failed to save state to server");
+      } else {
+        console.log("Successfully synchronized state to MySQL server.");
+      }
+    }).catch(err => {
+      console.error("Error saving state to server:", err);
+    });
   }
+};
+
+// Global interceptor for any direct localStorage writes in the inline HTML scripts
+const originalSetItem = localStorage.setItem;
+localStorage.setItem = function(key, value) {
+  if (key === "ecosphere_data") {
+    // Trigger background save to server
+    try {
+      fetch("/api/data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: value
+      }).then(res => {
+        if (!res.ok) console.error("Failed to sync direct localstorage save to MySQL");
+        else console.log("Direct localstorage write synced to MySQL via Prisma.");
+      }).catch(err => console.error("Sync error:", err));
+    } catch (err) {
+      console.error("Failed to parse sync data:", err);
+    }
+  }
+  return originalSetItem.apply(this, arguments);
 };
 
 // Global DB Reference
