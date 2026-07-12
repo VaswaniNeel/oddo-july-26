@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoSphere - Environmental Module</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div id="app-layout">
+    <div class="main-wrapper">
+      <main class="page-container tab-content">
+        
+        <div class="section-header">
+          <div class="section-title-wrapper">
+            <div class="section-icon-container">
+              <i data-lucide="leaf"></i>
+            </div>
+            <div>
+              <h1 class="section-title">Environmental Management</h1>
+              <p class="section-subtitle">Carbon accounting, emissions calculator, and sustainability goals</p>
+            </div>
+          </div>
+          <div id="admin-actions-container" class="hidden">
+            <button class="btn btn-primary" id="open-log-modal-btn">
+              <i data-lucide="plus"></i> Log Carbon Transaction
+            </button>
+          </div>
+        </div>
+        <!-- Upper Overview Cards -->
+        <div class="grid-cols-3" style="margin-bottom: 24px;">
+          <!-- CO2 Tracked -->
+          <div class="card stat-card">
+            <div class="stat-card-content">
+              <div>
+                <span class="stat-label">Total CO₂e Logged</span>
+                <h2 class="stat-value" id="env-co2-total">0 kg</h2>
+                <span class="stat-subtext">Sum of all operations</span>
+              </div>
+              <div class="stat-icon" style="background: var(--danger-glow); color: #ff8873;"><i data-lucide="factory"></i></div>
+            </div>
+          </div>
+          <!-- Target Goals -->
+          <div class="card stat-card">
+            <div class="stat-card-content">
+              <div>
+                <span class="stat-label">Sustainability Goals</span>
+                <h2 class="stat-value" id="env-goals-count">0 / 0</h2>
+                <span class="stat-subtext">Goals on track</span>
+              </div>
+              <div class="stat-icon" style="background: var(--forest-glow); color: var(--forest);"><i data-lucide="target"></i></div>
+            </div>
+          </div>
+          <!-- Carbon Intensity -->
+          <div class="card stat-card">
+            <div class="stat-card-content">
+              <div>
+                <span class="stat-label">Emissions Intensity</span>
+                <h2 class="stat-value" id="env-intensity">0.0</h2>
+                <span class="stat-subtext">kg CO₂e per employee</span>
+              </div>
+              <div class="stat-icon" style="background: var(--blue-glow); color: var(--blue);"><i data-lucide="trending-up"></i></div>
+            </div>
+          </div>
+        </div>
+        <!-- Calculator & Visualization Grid -->
+        <div class="grid-cols-2" style="margin-bottom: 24px;">
+          <!-- Carbon Calculator -->
+          <div class="card">
+            <h3 class="card-title">Real-time Carbon Calculator</h3>
+            <div class="form-field">
+              <label class="form-label" for="calc-factor">Source / Emission Factor</label>
+              <select id="calc-factor" class="form-input"></select>
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="calc-units">Usage Units</label>
+              <input type="number" id="calc-units" class="form-input" placeholder="e.g. 500" min="0" />
+            </div>
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 16px; text-align: center;">
+              <span style="font-size: 12px; color: var(--text-muted); display: block; text-transform: uppercase;">Calculated Emissions</span>
+              <h2 id="calc-result" style="font-family: var(--font-display); font-size: 32px; font-weight: 700; color: #ff8873; margin-top: 4px;">0 kg CO₂e</h2>
+              <span id="calc-formula" style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;">—</span>
+            </div>
+            <div id="calc-log-btn-container" class="hidden">
+              <button class="btn btn-secondary w-full" id="calc-log-btn"><i data-lucide="clipboard-list"></i> Save as carbon log</button>
+            </div>
+          </div>
+          <!-- Emissions Distribution Chart -->
+          <div class="card">
+            <h3 class="card-title">Emissions Share by Department</h3>
+            <div style="position: relative; height: 260px; width: 100%;">
+              <canvas id="deptEmissionsChart"></canvas>
+            </div>
+          </div>
+        </div>
+        <!-- Goals and Logs Tables Grid -->
+        <div class="grid-cols-1-2">
+          <!-- Goals Panel -->
+          <div class="card" style="display: flex; flex-direction: column; gap: 16px;">
+            <h3 class="card-title">Sustainability Goals</h3>
+            <div id="goals-list" style="display: flex; flex-direction: column; gap: 20px;">
+              <!-- Goals dynamic render -->
+            </div>
+          </div>
+          <!-- Logs Panel -->
+          <div class="card">
+            <h3 class="card-title">Carbon Emission Logs</h3>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Department</th>
+                    <th>Source</th>
+                    <th>Quantity</th>
+                    <th>Emissions</th>
+                    <th id="logs-th-actions" style="width: 50px;"></th>
+                  </tr>
+                </thead>
+                <tbody id="carbon-logs-tbody">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <!-- Log Transaction Modal -->
+        <div class="modal-overlay" id="log-modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3>Log Carbon Transaction</h3>
+              <button class="modal-close-btn" id="close-log-modal-btn"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+              <div class="form-field">
+                <label class="form-label" for="log-dept">Department</label>
+                <select id="log-dept" class="form-input"></select>
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="log-factor">Emission Factor</label>
+                <select id="log-factor" class="form-input"></select>
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="log-units">Quantity / Units</label>
+                <input type="number" id="log-units" class="form-input" placeholder="e.g. 1000" min="0" />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="log-date">Transaction Date</label>
+                <input type="date" id="log-date" class="form-input" />
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" id="cancel-log-btn">Cancel</button>
+              <button class="btn btn-primary" id="save-log-btn">Save Log</button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="state.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const db = window.EcoDB;
+      const role = db.session.role;
+      if (role === "admin") {
+        document.getElementById("admin-actions-container").classList.remove("hidden");
+        document.getElementById("calc-log-btn-container").classList.remove("hidden");
+        document.getElementById("logs-th-actions").style.display = "table-cell";
+      } else {
+        document.getElementById("logs-th-actions").style.display = "none";
+      }
+      // Populate selects
+      const logDept = document.getElementById("log-dept");
+      const logFactor = document.getElementById("log-factor");
+      const calcFactor = document.getElementById("calc-factor");
+      db.departments.forEach(d => {
+        if (d.status === "Active") {
+          logDept.innerHTML += `<option value="${d.id}">${d.name}</option>`;
+        }
+      });
+      db.emissionFactors.forEach(ef => {
+        const optionHTML = `<option value="${ef.id}">${ef.name} (${ef.factor} kg CO₂/${ef.unit})</option>`;
+        logFactor.innerHTML += optionHTML;
+        calcFactor.innerHTML += optionHTML;
+      });
+      document.getElementById("log-date").value = todayISO();
+      // Render stats and lists
+      renderData();
+      // Calculator logic
+      function runCalculator() {
+        const factorId = calcFactor.value;
+        const units = Number(document.getElementById("calc-units").value) || 0;
+        const factorObj = db.emissionFactors.find(f => f.id === factorId);
+        
+        if (factorObj) {
+          const emissions = units * factorObj.factor;
+          document.getElementById("calc-result").innerText = `${Math.round(emissions).toLocaleString()} kg CO₂e`;
+          document.getElementById("calc-formula").innerText = `${units.toLocaleString()} ${factorObj.unit} × ${factorObj.factor} factor`;
+        }
+      }
+      calcFactor.addEventListener("change", runCalculator);
+      document.getElementById("calc-units").addEventListener("input", runCalculator);
+      // Save from Calculator
+      const calcLogBtn = document.getElementById("calc-log-btn");
+      calcLogBtn.addEventListener("click", () => {
+        const factorId = calcFactor.value;
+        const units = Number(document.getElementById("calc-units").value) || 0;
+        if (units <= 0) {
+          showToast("Please enter a valid quantity.", "warning");
+          return;
+        }
+        const factorObj = db.emissionFactors.find(f => f.id === factorId);
+        const emissions = units * factorObj.factor;
+        
+        // Auto assign to employee's own department or Manufacturing as default
+        const me = db.employees.find(e => e.id === db.session.employeeId) || db.employees[0];
+        const deptId = me.departmentId || db.departments[0].id;
+        db.carbonTransactions.unshift({
+          id: uid("ct"),
+          departmentId: deptId,
+          factorId: factorId,
+          source: factorObj.source,
+          units: units,
+          emissions: emissions,
+          date: todayISO()
+        });
+        localStorage.setItem("ecosphere_data", JSON.stringify(db));
+        showToast("Transaction saved to carbon logs.");
+        renderData();
+        document.getElementById("calc-units").value = "";
+        runCalculator();
+      });
+      // Modal Events
+      const modal = document.getElementById("log-modal");
+      document.getElementById("open-log-modal-btn").addEventListener("click", () => modal.classList.add("show"));
+      document.getElementById("close-log-modal-btn").addEventListener("click", () => modal.classList.remove("show"));
+      document.getElementById("cancel-log-btn").addEventListener("click", () => modal.classList.remove("show"));
+      document.getElementById("save-log-btn").addEventListener("click", () => {
+        const deptId = logDept.value;
+        const factorId = logFactor.value;
+        const units = Number(document.getElementById("log-units").value);
+        const date = document.getElementById("log-date").value;
+        if (!units || units <= 0) {
+          showToast("Please enter positive units", "warning");
+          return;
+        }
+        const factorObj = db.emissionFactors.find(f => f.id === factorId);
+        const emissions = units * factorObj.factor;
+        db.carbonTransactions.unshift({
+          id: uid("ct"),
+          departmentId: deptId,
+          factorId: factorId,
+          source: factorObj.source,
+          units: units,
+          emissions: emissions,
+          date: date
+        });
+        localStorage.setItem("ecosphere_data", JSON.stringify(db));
+        modal.classList.remove("show");
+        showToast("Carbon log entry created.");
+        
+        // Reset modal form
+        document.getElementById("log-units").value = "";
+        document.getElementById("log-date").value = todayISO();
+        renderData();
+      });
+      let emissionsChartInstance = null;
+      function renderData() {
+        const scores = getScores(db);
+        const totalEmissions = db.carbonTransactions.reduce((s, t) => s + t.emissions, 0);
+        // Header Metrics
+        document.getElementById("env-co2-total").innerText = `${Math.round(totalEmissions / 1000).toLocaleString()} t`;
+        
+        const totalEmployees = db.departments.reduce((s, d) => s + d.employeeCount, 0) || 1;
+        document.getElementById("env-intensity").innerText = `${(totalEmissions / totalEmployees).toFixed(1)}`;
+        const onTrackGoals = db.goals.filter(g => g.status === "On Track").length;
+        document.getElementById("env-goals-count").innerText = `${onTrackGoals} / ${db.goals.length}`;
+        // Carbon logs render
+        const tbody = document.getElementById("carbon-logs-tbody");
+        tbody.innerHTML = "";
+        db.carbonTransactions.forEach(t => {
+          const dept = db.departments.find(d => d.id === t.departmentId);
+          const factor = db.emissionFactors.find(f => f.id === t.factorId);
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${fmtDate(t.date)}</td>
+            <td><strong>${dept ? dept.name : 'Unknown'}</strong></td>
+            <td><span class="pill pill-blue">${factor ? factor.name : t.source}</span></td>
+            <td>${t.units.toLocaleString()} ${factor ? factor.unit : ''}</td>
+            <td style="font-weight: 700; color: #ff8873;">${Math.round(t.emissions).toLocaleString()} kg</td>
+            ${role === 'admin' ? `<td><button class="delete-log-btn" data-id="${t.id}" style="background: none; border: none; color: var(--danger); cursor: pointer;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button></td>` : ''}
+          `;
+          tbody.appendChild(row);
+        });
+        // Add Delete event handlers
+        if (role === "admin") {
+          document.querySelectorAll(".delete-log-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+              const id = btn.getAttribute("data-id");
+              db.carbonTransactions = db.carbonTransactions.filter(t => t.id !== id);
+              localStorage.setItem("ecosphere_data", JSON.stringify(db));
+              showToast("Log entry deleted.", "info");
+              renderData();
+            });
+          });
+        }
+        // Goals render
+        const goalsList = document.getElementById("goals-list");
+        goalsList.innerHTML = "";
+        db.goals.forEach(g => {
+          const dept = db.departments.find(d => d.id === g.departmentId);
+          const goalEl = document.createElement("div");
+          
+          let tone = "neutral";
+          if (g.status === "On Track") tone = "green";
+          if (g.status === "At Risk") tone = "gold";
+          let adminControlsHTML = "";
+          if (role === "admin") {
+            adminControlsHTML = `
+              <div class="flex items-center gap-2 mt-2">
+                <input type="range" class="goal-slider form-input" data-id="${g.id}" min="0" max="100" value="${g.progress}" style="padding:0; height:auto;" />
+                <span style="font-size:12px; font-weight:700; width:36px;">${g.progress}%</span>
+              </div>
+            `;
+          }
+          goalEl.innerHTML = `
+            <div>
+              <div class="flex justify-between items-start">
+                <div>
+                  <h4 style="font-size: 13.5px; font-weight: 700;">${g.name}</h4>
+                  <span style="font-size: 11px; color: var(--text-muted);">${dept ? dept.name : 'Unknown'} • Target ${g.target}%</span>
+                </div>
+                <span class="pill pill-${tone}">${g.status}</span>
+              </div>
+              <div class="progress-container">
+                <div class="progress-bar" style="width: ${g.progress}%; background: var(--forest);"></div>
+              </div>
+              <div class="flex justify-between mt-1" style="font-size: 10.5px; color: var(--text-muted);">
+                <span>Progress: ${g.progress}%</span>
+                <span>Deadline: ${fmtDate(g.deadline)}</span>
+              </div>
+              ${adminControlsHTML}
+            </div>
+          `;
+          goalsList.appendChild(goalEl);
+        });
+        // Slider events for admin
+        if (role === "admin") {
+          document.querySelectorAll(".goal-slider").forEach(slider => {
+            slider.addEventListener("input", (e) => {
+              const id = e.target.getAttribute("data-id");
+              const val = Number(e.target.value);
+              const goal = db.goals.find(g => g.id === id);
+              if (goal) {
+                goal.progress = val;
+                // Automatically update status based on progress
+                if (val >= 80) goal.status = "On Track";
+                else if (val >= 40) goal.status = "At Risk";
+                else goal.status = "At Risk";
+                
+                localStorage.setItem("ecosphere_data", JSON.stringify(db));
+              }
+            });
+            slider.addEventListener("change", () => {
+              renderData();
+              showToast("Goal progress updated.");
+            });
+          });
+        }
+        // Draw Chart.js Pie Chart for Department Emissions Distribution
+        const deptEmissions = {};
+        db.carbonTransactions.forEach(t => {
+          const dept = db.departments.find(d => d.id === t.departmentId);
+          const name = dept ? dept.name : 'Unknown';
+          deptEmissions[name] = (deptEmissions[name] || 0) + t.emissions;
+        });
+        const labels = Object.keys(deptEmissions);
+        const data = Object.values(deptEmissions).map(v => Math.round(v));
+        
+        if (emissionsChartInstance) {
+          emissionsChartInstance.destroy();
+        }
+        const chartCanvas = document.getElementById("deptEmissionsChart");
+        if (chartCanvas) {
+          const ctx = chartCanvas.getContext('2d');
+          emissionsChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+              labels: labels,
+              datasets: [{
+                data: data,
+                backgroundColor: ['#0b5d46', '#33507a', '#b4862e', '#8b5cf6', '#ec4899'],
+                borderColor: '#11201c',
+                borderWidth: 2
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: 'right',
+                  labels: { color: '#94a89f', font: { size: 11 } }
+                }
+              }
+            }
+          });
+        }
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoSphere - ESG Reports & Analytics</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div id="app-layout">
+    <div class="main-wrapper">
+      <main class="page-container tab-content">
+        
+        <div class="section-header">
+          <div class="section-title-wrapper">
+            <div class="section-icon-container" style="background: var(--blue-glow); color: var(--blue);">
+              <i data-lucide="file-text"></i>
+            </div>
+            <div>
+              <h1 class="section-title">ESG Reporting Center</h1>
+              <p class="section-subtitle">Generate regulatory ESG reports and compile custom exports</p>
+            </div>
+          </div>
+        </div>
+        <!-- Predefined Reports Grid -->
+        <h3 class="card-title" style="margin-bottom:12px;">Standard Regulatory Reports</h3>
+        <div class="grid-cols-4" style="margin-bottom: 32px;">
+          <!-- Environmental Report -->
+          <div class="card" style="display:flex; flex-direction:column; justify-content:space-between; min-height:160px;">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <span class="pill pill-green" style="font-size:10px;">Environmental</span>
+                <i data-lucide="leaf" style="color:var(--forest); width:18px; height:18px;"></i>
+              </div>
+              <h4 style="font-size:14.5px; font-weight:700; color:#fff;">BRSR Carbon Report</h4>
+              <p style="font-size:11.5px; color:var(--text-muted); margin-top:4px; line-height:1.4;">Scope 1 & 2 carbon accounting logs, fuel consumption, grid electricity usage metrics.</p>
+            </div>
+            <button class="btn btn-sm btn-secondary w-full" onclick="downloadPredefinedReport('environmental')" style="margin-top:12px;"><i data-lucide="download"></i> Export BRSR PDF</button>
+          </div>
+          <!-- Social Report -->
+          <div class="card" style="display:flex; flex-direction:column; justify-content:space-between; min-height:160px;">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <span class="pill pill-gold" style="font-size:10px;">Social</span>
+                <i data-lucide="users" style="color:var(--gold); width:18px; height:18px;"></i>
+              </div>
+              <h4 style="font-size:14.5px; font-weight:700; color:#fff;">CSR & Engagement</h4>
+              <p style="font-size:11.5px; color:var(--text-muted); margin-top:4px; line-height:1.4;">Corporate Social Responsibility audits, community volunteer logs, and gender diversity reports.</p>
+            </div>
+            <button class="btn btn-sm btn-secondary w-full" onclick="downloadPredefinedReport('social')" style="margin-top:12px;"><i data-lucide="download"></i> Export Social PDF</button>
+          </div>
+          <!-- Governance Report -->
+          <div class="card" style="display:flex; flex-direction:column; justify-content:space-between; min-height:160px;">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <span class="pill pill-blue" style="font-size:10px;">Governance</span>
+                <i data-lucide="shield-check" style="color:var(--blue); width:18px; height:18px;"></i>
+              </div>
+              <h4 style="font-size:14.5px; font-weight:700; color:#fff;">Governance Audit</h4>
+              <p style="font-size:11.5px; color:var(--text-muted); margin-top:4px; line-height:1.4;">Corporate ethical policy compliance rates, whistleblowing records, and audit findings.</p>
+            </div>
+            <button class="btn btn-sm btn-secondary w-full" onclick="downloadPredefinedReport('governance')" style="margin-top:12px;"><i data-lucide="download"></i> Export Gov PDF</button>
+          </div>
+          <!-- Summary ESG Report -->
+          <div class="card" style="display:flex; flex-direction:column; justify-content:space-between; min-height:160px; background:var(--forest-glow); border-color:rgba(11,93,70,0.2)">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <span class="pill pill-green" style="font-size:10px; background:#fff; color:var(--forest);">Global ESG</span>
+                <i data-lucide="award" style="color:var(--forest); width:18px; height:18px;"></i>
+              </div>
+              <h4 style="font-size:14.5px; font-weight:700; color:#fff;">Executive ESG Summary</h4>
+              <p style="font-size:11.5px; color:var(--text-muted); margin-top:4px; line-height:1.4;">Consolidated ESG dashboard metrics, organizational weighted totals, and compliance status.</p>
+            </div>
+            <button class="btn btn-sm btn-primary w-full" onclick="downloadPredefinedReport('summary')" style="margin-top:12px;"><i data-lucide="download"></i> Export Summary PDF</button>
+          </div>
+        </div>
+        <!-- Custom Report Builder -->
+        <div class="card">
+          <h3 class="card-title">Custom Report Builder</h3>
+          
+          <!-- Filters Grid -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:16px; margin-bottom:20px;">
+            <div class="form-field">
+              <label class="form-label" for="rep-module">ESG Module</label>
+              <select id="rep-module" class="form-input">
+                <option value="all">All Modules</option>
+                <option value="environmental">Environmental (Carbon logs)</option>
+                <option value="social">Social (CSR logs)</option>
+                <option value="governance">Governance (Compliance/Audits)</option>
+                <option value="gamification">Gamification (Leaderboards/Badges)</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="rep-dept">Department</label>
+              <select id="rep-dept" class="form-input">
+                <option value="all">All Departments</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="rep-employee">Employee</label>
+              <select id="rep-employee" class="form-input">
+                <option value="all">All Employees</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="rep-start">Start Date</label>
+              <input type="date" id="rep-start" class="form-input" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="rep-end">End Date</label>
+              <input type="date" id="rep-end" class="form-input" />
+            </div>
+          </div>
+          <!-- Buttons -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+            <div style="color:var(--text-muted); font-size:12.5px;" id="record-count-indicator">
+              No matching records found.
+            </div>
+            <div style="display:flex; gap:12px;">
+              <button class="btn btn-secondary" id="preview-report-btn"><i data-lucide="search"></i> Generate Preview</button>
+              <button class="btn btn-primary" id="export-csv-btn"><i data-lucide="download"></i> Export CSV Data</button>
+            </div>
+          </div>
+          <!-- Preview Table -->
+          <div class="table-responsive" style="border-top: 1px solid var(--border); padding-top:16px;">
+            <table class="data-table">
+              <thead id="preview-thead">
+                <!-- Dynamic headers -->
+              </thead>
+              <tbody id="preview-tbody">
+                <tr><td style="text-align:center; color:var(--text-muted); padding:30px;">Select filters above and click Generate Preview.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="state.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const db = window.EcoDB;
+      // Populate Department Filter
+      const repDept = document.getElementById("rep-dept");
+      db.departments.forEach(d => {
+        repDept.innerHTML += `<option value="${d.id}">${d.name}</option>`;
+      });
+      // Populate Employee Filter
+      const repEmployee = document.getElementById("rep-employee");
+      db.employees.forEach(e => {
+        repEmployee.innerHTML += `<option value="${e.id}">${e.name}</option>`;
+      });
+      // Setup default dates (Jan 1, 2026 to Dec 31, 2026)
+      document.getElementById("rep-start").value = "2026-01-01";
+      document.getElementById("rep-end").value = "2026-12-31";
+      // Global reference for holding compiled report data
+      let compiledRecords = [];
+      let currentHeaders = [];
+      // Click event handlers
+      document.getElementById("preview-report-btn").addEventListener("click", compileReport);
+      document.getElementById("export-csv-btn").addEventListener("click", exportCSV);
+      window.downloadPredefinedReport = function(type) {
+        let title = "";
+        let csvContent = "";
+        if (type === "environmental") {
+          title = "BRSR_Carbon_Accounting_Report_2026.csv";
+          csvContent = "Date,Department,Source,Units,Emissions (kg CO2e)\n" + 
+            db.carbonTransactions.map(t => {
+              const dept = db.departments.find(d => d.id === t.departmentId);
+              const factor = db.emissionFactors.find(f => f.id === t.factorId);
+              return `"${t.date}","${dept ? dept.name : 'Unknown'}","${factor ? factor.name : t.source}",${t.units},${t.emissions}`;
+            }).join("\n");
+        } else if (type === "social") {
+          title = "CSR_Activity_And_Engagement_Report_2026.csv";
+          csvContent = "Employee,CSR Activity,Category,Points Earned,Status,Completion Date\n" + 
+            db.participation.map(p => {
+              const emp = db.employees.find(e => e.id === p.employeeId);
+              const act = db.csrActivities.find(a => a.id === p.activityId);
+              return `"${emp ? emp.name : 'Unknown'}","${act ? act.title : 'Unknown'}","${act ? act.category : ''}",${p.pointsEarned},"${p.approvalStatus}","${p.completionDate || ''}"`;
+            }).join("\n");
+        } else if (type === "governance") {
+          title = "Governance_Audits_Compliance_Report_2026.csv";
+          csvContent = "Type,Title,Department/Owner,Findings/Severity,Date/DueDate,Status\n" + 
+            db.audits.map(a => `"Audit","${a.title}","${a.department}","${a.findings} findings","${a.date}","${a.status}"`).join("\n") + "\n" +
+            db.complianceIssues.map(ci => {
+              const dept = db.departments.find(d => d.id === ci.departmentId);
+              return `"Compliance Issue","${ci.title}","${dept ? dept.name : ''} / ${ci.owner}","${ci.severity} severity","${ci.dueDate}","${ci.status}"`;
+            }).join("\n");
+        } else if (type === "summary") {
+          const scores = getScores(db);
+          title = "Executive_ESG_Summary_Report_2026.csv";
+          csvContent = "Metric,Value\n" + 
+            `Overall Weighted ESG Score,${scores.overall}%\n` + 
+            `Environmental Score (Goal progress),${scores.envAvg}%\n` + 
+            `Social Score (CSR & Training),${scores.socialAvg}%\n` + 
+            `Governance Score (Policy Ack & Issue Resolution),${scores.govAvg}%\n` + 
+            `Total Corporate Emissions,${scores.totalEmissions} kg CO2e\n` + 
+            `Total Active Departments,${db.departments.length}\n` +
+            `Total Published Policies,${db.policies.filter(p => p.status === 'Published').length}\n`;
+        }
+        downloadCSVFile(csvContent, title);
+      };
+      function compileReport() {
+        const moduleVal = document.getElementById("rep-module").value;
+        const deptVal = document.getElementById("rep-dept").value;
+        const empVal = document.getElementById("rep-employee").value;
+        const startVal = document.getElementById("rep-start").value;
+        const endVal = document.getElementById("rep-end").value;
+        compiledRecords = [];
+        
+        const filterByDate = (dateStr) => {
+          if (!dateStr) return true;
+          return dateStr >= startVal && dateStr <= endVal;
+        };
+        const filterByDept = (deptId) => {
+          if (deptVal === "all") return true;
+          return deptId === deptVal;
+        };
+        const filterByEmp = (empId) => {
+          if (empVal === "all") return true;
+          return empId === empVal;
+        };
+        // Gather environmental
+        if (moduleVal === "all" || moduleVal === "environmental") {
+          db.carbonTransactions.forEach(t => {
+            if (filterByDate(t.date) && filterByDept(t.departmentId)) {
+              const dept = db.departments.find(d => d.id === t.departmentId);
+              compiledRecords.push({
+                type: "Carbon Transaction",
+                date: t.date,
+                col1: dept ? dept.name : "Unknown",
+                col2: t.source,
+                col3: `${t.units.toLocaleString()}`,
+                col4: `${Math.round(t.emissions).toLocaleString()} kg CO₂e`
+              });
+            }
+          });
+        }
+        // Gather social
+        if (moduleVal === "all" || moduleVal === "social") {
+          db.participation.forEach(p => {
+            const emp = db.employees.find(e => e.id === p.employeeId);
+            const act = db.csrActivities.find(a => a.id === p.activityId);
+            const date = p.completionDate || act.date;
+            if (filterByDate(date) && filterByEmp(p.employeeId) && (!emp || filterByDept(emp.departmentId))) {
+              compiledRecords.push({
+                type: "CSR Participation",
+                date: date || "—",
+                col1: emp ? emp.name : "Unknown",
+                col2: act ? act.title : "Unknown",
+                col3: `${act ? act.points : 0} Pts`,
+                col4: p.approvalStatus
+              });
+            }
+          });
+        }
+        // Gather governance
+        if (moduleVal === "all" || moduleVal === "governance") {
+          // Audits
+          db.audits.forEach(a => {
+            if (filterByDate(a.date)) {
+              compiledRecords.push({
+                type: "Internal Audit",
+                date: a.date,
+                col1: a.department,
+                col2: a.title,
+                col3: `${a.findings} findings`,
+                col4: a.status
+              });
+            }
+          });
+          // Compliance Issues
+          db.complianceIssues.forEach(ci => {
+            const dept = db.departments.find(d => d.id === ci.departmentId);
+            if (filterByDate(ci.dueDate) && filterByDept(ci.departmentId)) {
+              compiledRecords.push({
+                type: "Compliance Issue",
+                date: ci.dueDate,
+                col1: dept ? dept.name : "Unknown",
+                col2: ci.title,
+                col3: `Severity: ${ci.severity}`,
+                col4: ci.status
+              });
+            }
+          });
+        }
+        // Gather gamification
+        if (moduleVal === "all" || moduleVal === "gamification") {
+          // Challenge participations
+          db.challengeParticipation.forEach(cp => {
+            const emp = db.employees.find(e => e.id === cp.employeeId);
+            const ch = db.challenges.find(c => c.id === cp.challengeId);
+            const date = ch.deadline;
+            if (filterByDate(date) && filterByEmp(cp.employeeId) && (!emp || filterByDept(emp.departmentId))) {
+              compiledRecords.push({
+                type: "Challenge Progress",
+                date: date,
+                col1: emp ? emp.name : "Unknown",
+                col2: ch ? ch.title : "Unknown",
+                col3: `${cp.progress}% completed`,
+                col4: cp.approval
+              });
+            }
+          });
+        }
+        // Sort compiled records by Date descending
+        compiledRecords.sort((a, b) => b.date.localeCompare(a.date));
+        // Update preview headers
+        const thead = document.getElementById("preview-thead");
+        const tbody = document.getElementById("preview-tbody");
+        const indicator = document.getElementById("record-count-indicator");
+        thead.innerHTML = "";
+        tbody.innerHTML = "";
+        if (compiledRecords.length === 0) {
+          tbody.innerHTML = `<tr><td style="text-align:center; color:var(--text-muted); padding:30px;">No matching records found. Adjust your date filters.</td></tr>`;
+          indicator.innerText = "No matching records found.";
+          return;
+        }
+        indicator.innerText = `Found ${compiledRecords.length} records matching the filters.`;
+        // Standard dynamic headers for generic view
+        currentHeaders = ["Record Type", "Date", "Department / Employee", "Activity / Parameter", "Quantity / Weight", "Status / Emissions"];
+        const headerRow = document.createElement("tr");
+        currentHeaders.forEach(h => {
+          headerRow.innerHTML += `<th>${h}</th>`;
+        });
+        thead.appendChild(headerRow);
+        // Populate table body
+        compiledRecords.forEach(r => {
+          const row = document.createElement("tr");
+          
+          let statusTone = "neutral";
+          if (r.col4 === "Approved" || r.col4 === "Closed" || r.col4 === "Resolved" || r.col4.includes("CO₂e")) statusTone = "green";
+          if (r.col4 === "Pending" || r.col4 === "Under Review" || r.col4 === "In Progress" || r.col4 === "Open") statusTone = "gold";
+          if (r.col4 === "Rejected" || r.col4 === "Overdue" || r.col4.includes("findings")) statusTone = "red";
+          row.innerHTML = `
+            <td><span class="pill pill-blue" style="font-size:10px;">${r.type}</span></td>
+            <td>${fmtDate(r.date)}</td>
+            <td><strong>${r.col1}</strong></td>
+            <td>${r.col2}</td>
+            <td>${r.col3}</td>
+            <td><span class="pill pill-${statusTone}">${r.col4}</span></td>
+          `;
+          tbody.appendChild(row);
+        });
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      }
+      function exportCSV() {
+        if (compiledRecords.length === 0) {
+          showToast("No data compiled. Please run Generate Preview first.", "warning");
+          return;
+        }
+        let csvContent = currentHeaders.join(",") + "\n";
+        compiledRecords.forEach(r => {
+          csvContent += `"${r.type}","${r.date}","${r.col1}","${r.col2}","${r.col3}","${r.col4}"\n`;
+        });
+        downloadCSVFile(csvContent, "EcoSphere_Custom_ESG_Report.csv");
+      }
+      function downloadCSVFile(content, fileName) {
+        const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", fileName);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast(`Report downloaded successfully: ${fileName}`);
+      }
+    });
+  </script>
+</body>
+</html>

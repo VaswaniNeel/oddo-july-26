@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoSphere - Gamification & Rewards</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div id="app-layout">
+    <div class="main-wrapper">
+      <main class="page-container tab-content">
+        
+        <div class="section-header">
+          <div class="section-title-wrapper">
+            <div class="section-icon-container" style="background: var(--gold-glow); color: var(--gold);">
+              <i data-lucide="trophy"></i>
+            </div>
+            <div>
+              <h1 class="section-title">Gamification & Rewards</h1>
+              <p class="section-subtitle">Sustainability challenges, employee leaderboards, badges, and rewards redemption</p>
+            </div>
+          </div>
+          <div id="admin-actions-container" class="hidden">
+            <button class="btn btn-primary" id="open-challenge-modal-btn">
+              <i data-lucide="plus"></i> Create Challenge
+            </button>
+          </div>
+        </div>
+        <!-- Upper Info Grid -->
+        <div class="grid-cols-4" style="margin-bottom: 24px;">
+          <!-- Active Challenges -->
+          <div class="card stat-card">
+            <div class="stat-card-content">
+              <div>
+                <span class="stat-label">Active Challenges</span>
+                <h2 class="stat-value" id="gam-active-challenges">0</h2>
+                <span class="stat-subtext">Sustainability tasks</span>
+              </div>
+              <div class="stat-icon" style="background: var(--gold-glow); color: var(--gold);"><i data-lucide="target"></i></div>
+            </div>
+          </div>
+          <!-- My XP -->
+          <div class="card stat-card">
+            <div class="stat-card-content">
+              <div>
+                <span class="stat-label">My Current XP</span>
+                <h2 class="stat-value" id="gam-my-xp">0 XP</h2>
+                <span class="stat-subtext" id="gam-my-rank">Rank #0 in company</span>
+              </div>
+              <div class="stat-icon" style="background: var(--forest-glow); color: var(--forest);"><i data-lucide="flame"></i></div>
+            </div>
+          </div>
+          <!-- My Points -->
+          <div class="card stat-card">
+            <div class="stat-card-content">
+              <div>
+                <span class="stat-label">Redeemable Points</span>
+                <h2 class="stat-value" id="gam-my-points">0 Pts</h2>
+                <span class="stat-subtext">Points balance</span>
+              </div>
+              <div class="stat-icon" style="background: var(--blue-glow); color: var(--blue);"><i data-lucide="gift"></i></div>
+            </div>
+          </div>
+          <!-- Badge Count -->
+          <div class="card stat-card">
+            <div class="stat-card-content">
+              <div>
+                <span class="stat-label">Badges Unlocked</span>
+                <h2 class="stat-value" id="gam-my-badges-count">0</h2>
+                <span class="stat-subtext">Auto-award active</span>
+              </div>
+              <div class="stat-icon" style="background: var(--gold-glow); color: var(--gold);"><i data-lucide="award"></i></div>
+            </div>
+          </div>
+        </div>
+        <!-- Challenges Lifecycle Board -->
+        <div class="card" style="margin-bottom: 24px;">
+          <h3 class="card-title">Sustainability Challenges</h3>
+          <div class="challenge-grid" id="challenges-grid-container">
+            <!-- Dynamic challenges render -->
+          </div>
+        </div>
+        <!-- Leaderboard & Badge Cabinet & Rewards Grid -->
+        <div style="display: grid; grid-template-columns: 280px 1fr 1fr; gap: 24px; margin-bottom: 24px;" class="grid-cols-3">
+          <!-- Leaderboard Panel -->
+          <div class="card">
+            <h3 class="card-title">Employee Leaderboard</h3>
+            <div class="leaderboard-list" id="leaderboard-container">
+              <!-- Dynamic leaderboard list -->
+            </div>
+          </div>
+          <!-- Badge cabinet (all badges) -->
+          <div class="card">
+            <h3 class="card-title">Badge Showcase</h3>
+            <div id="all-badges-container" style="display: flex; flex-direction: column; gap: 14px;">
+              <!-- Dynamic badges showcase -->
+            </div>
+          </div>
+          <!-- Reward Shop Panel -->
+          <div class="card">
+            <h3 class="card-title">Incentives Catalog</h3>
+            <div id="rewards-shop-container" style="display: flex; flex-direction: column; gap: 14px;">
+              <!-- Dynamic reward listings -->
+            </div>
+          </div>
+        </div>
+        <!-- Admin Challenge Review Board -->
+        <div class="card id-admin-review-card hidden" id="admin-review-section">
+          <h3 class="card-title">Challenge Participation Approvals</h3>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th>Challenge</th>
+                  <th>Progress</th>
+                  <th>Proof Status</th>
+                  <th>XP Award</th>
+                  <th style="width: 140px;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="approvals-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Create Challenge Modal -->
+        <div class="modal-overlay" id="challenge-modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3>Create Sustainability Challenge</h3>
+              <button class="modal-close-btn" id="close-challenge-modal-btn"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+              <div class="form-field">
+                <label class="form-label" for="ch-title">Challenge Title</label>
+                <input type="text" id="ch-title" class="form-input" placeholder="e.g. Turn Off Monitores at Night" />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="ch-category">Category</label>
+                <select id="ch-category" class="form-input"></select>
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="ch-xp">XP Award</label>
+                <input type="number" id="ch-xp" class="form-input" placeholder="e.g. 100" min="0" />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="ch-difficulty">Difficulty</label>
+                <select id="ch-difficulty" class="form-input">
+                  <option value="Easy">Easy</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Hard">Hard</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="ch-deadline">Deadline</label>
+                <input type="date" id="ch-deadline" class="form-input" />
+              </div>
+              <div class="form-field" style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" id="ch-evidence" style="width:16px; height:16px;" />
+                <label class="form-label" for="ch-evidence" style="margin-bottom:0; cursor:pointer;">Require Evidence File Upload</label>
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="ch-desc">Description</label>
+                <textarea id="ch-desc" class="form-input" placeholder="Describe the challenge parameters..."></textarea>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" id="cancel-challenge-btn">Cancel</button>
+              <button class="btn btn-primary" id="save-challenge-btn">Create Draft</button>
+            </div>
+          </div>
+        </div>
+        <!-- Update Progress Modal -->
+        <div class="modal-overlay" id="progress-modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3>Update Challenge Progress</h3>
+              <button class="modal-close-btn" id="close-progress-modal-btn"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+              <p style="font-size:13px; color:var(--text-muted); margin-bottom: 16px;" id="progress-modal-subtitle"></p>
+              <div class="form-field">
+                <label class="form-label" for="progress-range">Progress Percentage</label>
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <input type="range" id="progress-range" class="form-input" min="0" max="100" value="0" style="padding:0; height:auto;" />
+                  <span style="font-weight:700; font-size:14px; width:36px;" id="progress-percentage-display">0%</span>
+                </div>
+              </div>
+              <div class="form-field id-progress-evidence-field">
+                <label class="form-label" for="progress-proof">Attach Proof File</label>
+                <input type="file" id="progress-proof" class="form-input" />
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" id="cancel-progress-btn">Cancel</button>
+              <button class="btn btn-primary" id="save-progress-btn">Save Progress</button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="state.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const db = window.EcoDB;
+      const role = db.session.role;
+      const me = db.employees.find(e => e.id === db.session.employeeId) || db.employees[0];
+      if (role === "admin") {
+        document.getElementById("admin-actions-container").classList.remove("hidden");
+        document.getElementById("admin-review-section").classList.remove("hidden");
+      }
+      // Populate Category select
+      const chCategory = document.getElementById("ch-category");
+      db.categories.forEach(c => {
+        if (c.type === "Challenge") {
+          chCategory.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+        }
+      });
+      document.getElementById("ch-deadline").value = todayISO();
+      // Render Dashboard metrics
+      renderData();
+      // Modals
+      const chModal = document.getElementById("challenge-modal");
+      const progressModal = document.getElementById("progress-modal");
+      document.getElementById("close-challenge-modal-btn").addEventListener("click", () => chModal.classList.remove("show"));
+      document.getElementById("cancel-challenge-btn").addEventListener("click", () => chModal.classList.remove("show"));
+      
+      if (role === "admin") {
+        document.getElementById("open-challenge-modal-btn").addEventListener("click", () => chModal.classList.add("show"));
+      }
+      document.getElementById("close-progress-modal-btn").addEventListener("click", () => progressModal.classList.remove("show"));
+      document.getElementById("cancel-progress-btn").addEventListener("click", () => progressModal.classList.remove("show"));
+      // Range Progress updates value indicator
+      const progressRange = document.getElementById("progress-range");
+      const progressDisplay = document.getElementById("progress-percentage-display");
+      progressRange.addEventListener("input", (e) => {
+        progressDisplay.innerText = `${e.target.value}%`;
+      });
+      // Save Challenge (Draft)
+      document.getElementById("save-challenge-btn").addEventListener("click", () => {
+        const title = document.getElementById("ch-title").value;
+        const category = chCategory.value;
+        const xp = Number(document.getElementById("ch-xp").value);
+        const difficulty = document.getElementById("ch-difficulty").value;
+        const deadline = document.getElementById("ch-deadline").value;
+        const evidence = document.getElementById("ch-evidence").checked;
+        const desc = document.getElementById("ch-desc").value;
+        if (!title || !xp || xp <= 0) {
+          showToast("Please enter a valid Title and XP.", "warning");
+          return;
+        }
+        db.challenges.unshift({
+          id: uid("ch"),
+          title,
+          category,
+          description: desc,
+          xp,
+          difficulty,
+          evidenceRequired: evidence,
+          deadline,
+          status: "Draft" // Default lifecycle stage
+        });
+        localStorage.setItem("ecosphere_data", JSON.stringify(db));
+        chModal.classList.remove("show");
+        showToast("Sustainability challenge created as Draft.");
+        
+        // Reset
+        document.getElementById("ch-title").value = "";
+        document.getElementById("ch-xp").value = "";
+        document.getElementById("ch-desc").value = "";
+        document.getElementById("ch-deadline").value = todayISO();
+        document.getElementById("ch-evidence").checked = false;
+        renderData();
+      });
+      // Join Challenge handler
+      window.joinChallenge = function(challengeId) {
+        db.challengeParticipation.unshift({
+          id: uid("cp"),
+          challengeId: challengeId,
+          employeeId: me.id,
+          progress: 0,
+          proof: "",
+          approval: "Pending",
+          xpAwarded: 0
+        });
+        localStorage.setItem("ecosphere_data", JSON.stringify(db));
+        showToast("Joined challenge successfully!");
+        renderData();
+      };
+      let activeCpId = null;
+      let activeChallengeObj = null;
+      // Update Progress Modal Open handler
+      window.openUpdateProgress = function(cpId, challengeId) {
+        activeCpId = cpId;
+        const cp = db.challengeParticipation.find(x => x.id === cpId);
+        activeChallengeObj = db.challenges.find(x => x.id === challengeId);
+        document.getElementById("progress-modal-subtitle").innerText = `Update progress for: "${activeChallengeObj.title}"`;
+        progressRange.value = cp.progress;
+        progressDisplay.innerText = `${cp.progress}%`;
+        // Check if evidence requirement is active for this challenge
+        const evidenceField = document.querySelector(".id-progress-evidence-field");
+        if (activeChallengeObj.evidenceRequired) {
+          evidenceField.style.display = "block";
+        } else {
+          evidenceField.style.display = "none";
+        }
+        progressModal.classList.add("show");
+      };
+      // Save Progress Clicked
+      document.getElementById("save-progress-btn").addEventListener("click", () => {
+        const val = Number(progressRange.value);
+        const cp = db.challengeParticipation.find(x => x.id === activeCpId);
+        const proofInput = document.getElementById("progress-proof");
+        let proofFile = "";
+        if (proofInput.files.length > 0) {
+          proofFile = proofInput.files[0].name;
+        }
+        if (activeChallengeObj.evidenceRequired && val === 100 && !proofFile) {
+          showToast("Evidence proof file is required for 100% completion.", "danger");
+          return;
+        }
+        cp.progress = val;
+        if (proofFile) {
+          cp.proof = proofFile;
+        }
+        if (val === 100) {
+          cp.approval = "Under Review";
+          showToast("Challenge progress set to 100%. Under admin review.");
+        } else {
+          cp.approval = "Pending";
+          showToast("Challenge progress updated.");
+        }
+        localStorage.setItem("ecosphere_data", JSON.stringify(db));
+        progressModal.classList.remove("show");
+        renderData();
+      });
+      // Admin Approvals Handlers
+      window.approveChallenge = function(cpId) {
+        const cp = db.challengeParticipation.find(x => x.id === cpId);
+        const ch = db.challenges.find(c => c.id === cp.challengeId);
+        const emp = db.employees.find(e => e.id === cp.employeeId);
+        cp.approval = "Approved";
+        cp.xpAwarded = ch.xp;
+        if (emp) {
+          emp.xp += ch.xp;
+          // Standard ratio: award points equal to 50% of challenge XP
+          emp.points += Math.round(ch.xp * 0.5);
+        }
+        localStorage.setItem("ecosphere_data", JSON.stringify(db));
+        showToast("Challenge participation approved.");
+        triggerNotification(`Challenge approved: "${ch.title}" completed (+${ch.xp} XP)`, cp.employeeId, "badge");
+        
+        // Trigger badge check
+        checkBadgeAutoAward(cp.employeeId);
+        renderData();
+      };
+      window.rejectChallenge = function(cpId) {
+        const cp = db.challengeParticipation.find(x => x.id === cpId);
+        const ch = db.challenges.find(c => c.id === cp.challengeId);
+        cp.approval = "Pending";
+        cp.progress = 90; // push back progress to 90%
+        localStorage.setItem("ecosphere_data", JSON.stringify(db));
+        showToast("Participation rejected. Progress set back to 90%", "warning");
+        triggerNotification(`Challenge participation rejected: "${ch.title}" (resubmit proof)`, cp.employeeId, "badge");
+        
+        renderData();
+      };
+      // Admin Challenge lifecycle transitions
+      window.transitionChallenge = function(challengeId, nextStatus) {
+        const ch = db.challenges.find(c => c.id === challengeId);
+        if (ch) {
+          ch.status = nextStatus;
+          localStorage.setItem("ecosphere_data", JSON.stringify(db));
+          showToast(`Challenge status set to: ${nextStatus}`);
+          renderData();
+        }
+      };
+      // Reward Redemption Click handler
+      window.redeemRewardClick = function(rewardId) {
+        const rew = db.rewards.find(r => r.id === rewardId);
+        
+        if (me.points < rew.pointsRequired) {
+          showToast("Insufficient Points balance to redeem this reward.", "danger");
+          return;
+        }
+        if (rew.stock <= 0) {
+          showToast("Reward out of stock!", "danger");
+          return;
+        }
+        // Deduct points
+        me.points -= rew.pointsRequired;
+        
+        // Reduce stock
+        rew.stock--;
+        // Log redemption
+        db.redemptions.unshift({
+          id: uid("red"),
+          employeeId: me.id,
+          rewardId: rewardId,
+          date: todayISO(),
+          pointsSpent: rew.pointsRequired
+        });
+        localStorage.setItem("ecosphere_data", JSON.stringify(db));
+        showToast(`Successfully redeemed: ${rew.name}!`);
+        triggerNotification(`Incentive redeemed: ${rew.name} (-${rew.pointsRequired} pts)`, me.id, "badge");
+        
+        renderData();
+      };
+      function renderData() {
+        const scores = getScores(db);
+        // Header Metrics update
+        document.getElementById("gam-active-challenges").innerText = db.challenges.filter(c => c.status === 'Active').length;
+        document.getElementById("gam-my-xp").innerText = `${me.xp} XP`;
+        document.getElementById("gam-my-points").innerText = `${me.points} Pts`;
+        const sortedEmp = [...db.employees].sort((a, b) => b.xp - a.xp);
+        const myIdx = sortedEmp.findIndex(e => e.id === me.id) + 1;
+        document.getElementById("gam-my-rank").innerText = `Rank #${myIdx} in company`;
+        const myBadges = db.employeeBadges.filter(eb => eb.employeeId === me.id);
+        document.getElementById("gam-my-badges-count").innerText = myBadges.length;
+        // Render Challenges Grid
+        const grid = document.getElementById("challenges-grid-container");
+        grid.innerHTML = "";
+        
+        db.challenges.forEach(ch => {
+          const cp = db.challengeParticipation.find(x => x.challengeId === ch.id && x.employeeId === me.id);
+          
+          let actionHTML = "";
+          let badgeColor = "neutral";
+          if (ch.difficulty === "Easy") badgeColor = "blue";
+          if (ch.difficulty === "Medium") badgeColor = "gold";
+          if (ch.difficulty === "Hard") badgeColor = "red";
+          let adminLifecycleDropdown = "";
+          if (role === "admin") {
+            adminLifecycleDropdown = `
+              <div style="margin-top:12px; border-top:1px solid var(--border); padding-top:10px;">
+                <label class="form-label" style="font-size:10px;">Status Lifecycle</label>
+                <select class="form-input" style="font-size:11px; padding:3px 6px;" onchange="transitionChallenge('${ch.id}', this.value)">
+                  <option value="Draft" ${ch.status === 'Draft' ? 'selected' : ''}>Draft</option>
+                  <option value="Active" ${ch.status === 'Active' ? 'selected' : ''}>Active</option>
+                  <option value="Completed" ${ch.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                  <option value="Archived" ${ch.status === 'Archived' ? 'selected' : ''}>Archived</option>
+                </select>
+              </div>
+            `;
+          }
+          if (ch.status === "Active") {
+            if (role === "employee") {
+              if (cp) {
+                if (cp.approval === "Approved") {
+                  actionHTML = `<span class="pill pill-green w-full" style="justify-content:center;"><i data-lucide="badge-check" style="width:14px; height:14px; margin-right:4px;"></i> Completed</span>`;
+                } else if (cp.approval === "Under Review") {
+                  actionHTML = `<span class="pill pill-gold w-full" style="justify-content:center;"><i data-lucide="circle-alert" style="width:14px; height:14px; margin-right:4px;"></i> Under Review</span>`;
+                } else {
+                  actionHTML = `<button class="btn btn-secondary btn-sm w-full" onclick="openUpdateProgress('${cp.id}', '${ch.id}')">Update Progress</button>`;
+                }
+              } else {
+                actionHTML = `<button class="btn btn-primary btn-sm w-full" onclick="joinChallenge('${ch.id}')">Join Challenge</button>`;
+              }
+            } else {
+              actionHTML = `<span class="pill pill-green w-full" style="justify-content:center;">Active</span>`;
+            }
+          } else {
+            actionHTML = `<span class="pill pill-neutral w-full" style="justify-content:center;">${ch.status}</span>`;
+          }
+          const card = document.createElement("div");
+          card.className = "challenge-card";
+          card.innerHTML = `
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="pill pill-${badgeColor}" style="font-size:10px;">${ch.difficulty}</span>
+                <span style="font-size:11px; color:var(--text-muted);">+${ch.xp} XP</span>
+              </div>
+              <h4 style="font-size: 14.5px; font-weight: 700; color:#ffffff;">${ch.title}</h4>
+              <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px; line-height: 1.4; min-height: 50px;">${ch.description}</p>
+              
+              ${cp ? `
+                <div style="margin: 12px 0 8px 0;">
+                  <div class="flex justify-between" style="font-size:10.5px; color:var(--text-muted); margin-bottom:2px;">
+                    <span>Progress</span>
+                    <span>${cp.progress}%</span>
+                  </div>
+                  <div class="progress-container">
+                    <div class="progress-bar" style="width: ${cp.progress}%; background: var(--forest);"></div>
+                  </div>
+                </div>
+              ` : ''}
+              <div style="font-size: 11px; color: var(--text-muted); margin: 8px 0;"><i data-lucide="calendar" style="width:12px; height:12px; vertical-align:middle; margin-right:4px;"></i> Deadline: ${fmtDate(ch.deadline)}</div>
+              ${ch.evidenceRequired ? `<div style="font-size: 10px; color: #ff8873; margin-bottom: 8px;"><i data-lucide="circle-alert" style="width:11px; height:11px; vertical-align:middle; margin-right:4px;"></i> Upload required</div>` : ''}
+            </div>
+            <div>
+              ${actionHTML}
+              ${adminLifecycleDropdown}
+            </div>
+          `;
+          grid.appendChild(card);
+        });
+        // Render Leaderboard
+        const leaderboard = document.getElementById("leaderboard-container");
+        leaderboard.innerHTML = "";
+        sortedEmp.forEach((e, idx) => {
+          const item = document.createElement("div");
+          item.className = "leaderboard-item";
+          item.innerHTML = `
+            <span class="ranking-number" style="color: ${idx === 0 ? 'var(--gold)' : 'var(--text-muted)'}">#${idx + 1}</span>
+            <div class="user-avatar" style="width: 30px; height: 30px; font-size:11px;">${e.avatar}</div>
+            <span class="ranking-name" style="font-size:12.5px;">${e.name} ${e.id === me.id ? '(You)' : ''}</span>
+            <span class="pill pill-gold" style="font-size:10px;">${e.xp} XP</span>
+          `;
+          leaderboard.appendChild(item);
+        });
+        // Render All Badges Showcase
+        const showcase = document.getElementById("all-badges-container");
+        showcase.innerHTML = "";
+        db.badges.forEach(b => {
+          const unlockedCount = db.employeeBadges.filter(eb => eb.badgeId === b.id).length;
+          const isMeUnlocked = db.employeeBadges.some(eb => eb.employeeId === me.id && eb.badgeId === b.id);
+          const item = document.createElement("div");
+          item.style.padding = "10px 14px";
+          item.style.background = isMeUnlocked ? "var(--gold-glow)" : "rgba(255,255,255,0.01)";
+          item.style.border = isMeUnlocked ? "1px solid rgba(180, 134, 46, 0.25)" : "1px solid var(--border)";
+          item.style.borderRadius = "12px";
+          item.style.display = "flex";
+          item.style.alignItems = "center";
+          item.style.gap = "12px";
+          item.innerHTML = `
+            <span style="font-size:26px;">${b.icon}</span>
+            <div style="flex:1;">
+              <h4 style="font-size: 13.5px; font-weight:700; color:#fff;">${b.name}</h4>
+              <p style="font-size: 11px; color: var(--text-muted); margin-top: 1px;">${b.description}</p>
+            </div>
+            <div>
+              <span class="pill pill-neutral" style="font-size:10px;">${unlockedCount} unlocked</span>
+            </div>
+          `;
+          showcase.appendChild(item);
+        });
+        // Render Reward catalog
+        const rewardsShop = document.getElementById("rewards-shop-container");
+        rewardsShop.innerHTML = "";
+        db.rewards.forEach(rew => {
+          let btnHTML = "";
+          if (role === "employee") {
+            if (rew.stock <= 0) {
+              btnHTML = `<button class="btn btn-sm btn-secondary" disabled>Sold Out</button>`;
+            } else {
+              btnHTML = `<button class="btn btn-sm btn-primary" onclick="redeemRewardClick('${rew.id}')">Redeem</button>`;
+            }
+          } else {
+            btnHTML = `<span class="pill pill-neutral">${rew.stock} left</span>`;
+          }
+          const item = document.createElement("div");
+          item.style.padding = "12px 14px";
+          item.style.border = "1px solid var(--border)";
+          item.style.borderRadius = "12px";
+          item.style.display = "flex";
+          item.style.justifyContent = "between";
+          item.style.alignItems = "center";
+          item.innerHTML = `
+            <div style="flex:1; margin-right: 12px;">
+              <h4 style="font-size:13.5px; font-weight:700; color:#fff;">${rew.name}</h4>
+              <p style="font-size: 11px; color: var(--text-muted); margin-top:1px;">${rew.description}</p>
+              <div class="flex items-center gap-2 mt-2">
+                <span class="pill pill-gold" style="font-size:10px; padding:2px 6px;">${rew.pointsRequired} Pts</span>
+                <span style="font-size:10.5px; color: var(--text-muted);">Stock: ${rew.stock} units</span>
+              </div>
+            </div>
+            <div>
+              ${btnHTML}
+            </div>
+          `;
+          rewardsShop.appendChild(item);
+        });
+        // Render Admin Review Table
+        if (role === "admin") {
+          const appTbody = document.getElementById("approvals-tbody");
+          appTbody.innerHTML = "";
+          
+          const reviewItems = db.challengeParticipation.filter(cp => cp.approval === "Under Review");
+          if (reviewItems.length === 0) {
+            appTbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">No challenge participations currently pending review.</td></tr>`;
+          } else {
+            reviewItems.forEach(cp => {
+              const emp = db.employees.find(e => e.id === cp.employeeId);
+              const ch = db.challenges.find(c => c.id === cp.challengeId);
+              
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                <td><strong>${emp ? emp.name : 'Unknown'}</strong></td>
+                <td>${ch ? ch.title : 'Unknown'}</td>
+                <td><span class="pill pill-gold">${cp.progress}%</span></td>
+                <td>${cp.proof ? `<span style="color:var(--forest); font-size:12px;"><i data-lucide="upload" style="width:12px; height:12px; margin-right:4px;"></i> ${cp.proof}</span>` : '<span style="color:var(--danger); font-size:12px;">None</span>'}</td>
+                <td><span class="pill pill-gold">${ch ? ch.xp : 0} XP</span></td>
+                <td>
+                  <div style="display:flex; gap:6px;">
+                    <button class="btn btn-sm btn-primary approve-ch-btn" data-id="${cp.id}" style="padding: 4px 8px; font-size:11.5px;"><i data-lucide="check" style="width:12px; height:12px;"></i> Approve</button>
+                    <button class="btn btn-sm btn-danger reject-ch-btn" data-id="${cp.id}" style="padding: 4px 8px; font-size:11.5px;"><i data-lucide="x" style="width:12px; height:12px;"></i> Reject</button>
+                  </div>
+                </td>
+              `;
+              appTbody.appendChild(row);
+            });
+            
+            // Add click events to approvals
+            document.querySelectorAll(".approve-ch-btn").forEach(btn => {
+              btn.addEventListener("click", () => {
+                const id = btn.getAttribute("data-id");
+                approveChallenge(id);
+              });
+            });
+            document.querySelectorAll(".reject-ch-btn").forEach(btn => {
+              btn.addEventListener("click", () => {
+                const id = btn.getAttribute("data-id");
+                rejectChallenge(id);
+              });
+            });
+          }
+        }
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoSphere - Governance & Compliance</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div id="app-layout">
+    <div class="main-wrapper">
+      <main class="page-container tab-content">
+        
+        <div class="section-header">
+          <div class="section-title-wrapper">
+            <div class="section-icon-container" style="background: var(--blue-glow); color: var(--blue);">
+              <i data-lucide="shield-check"></i>
+            </div>
+            <div>
+              <h1 class="section-title">Governance & Compliance</h1>
+              <p class="section-subtitle">Governance policies, internal audits, and compliance violations</p>
+            </div>
+          </div>
+          <div id="admin-actions-container" class="hidden">
+            <button class="btn btn-primary" id="open-issue-modal-btn">
+              <i data-lucide="plus"></i> Raise Compliance Issue
+            </button>
+          </div>
+        </div>
+        <!-- Upper Status Indicators -->
+        <div class="grid-cols-4" style="margin-bottom: 24px;">
+          <div class="card stat-card">
+            <div class="stat-card-content">
+              <div>
+                <span class="stat-label">Published Policies</span>
+                <h2 class="stat-value" id="gov-policy-count">0</h2>
+                <span class="stat-subtext">Active guidelines</span>
+              </div>
+              <div class="stat-icon" style="background: var(--blue-glow); color: var(--blue);"><i data-lucide="clipboard-list"></i></div>
+            </div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-card-content">
+              <div>
+                <span class="stat-label">Policy Ack Rate</span>
+                <h2 class="stat-value" id="gov-ack-rate">0%</h2>
+                <span class="stat-subtext">Total employee reading</span>
+              </div>
+              <div class="stat-icon" style="background: var(--forest-glow); color: var(--forest);"><i data-lucide="badge-check"></i></div>
+            </div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-card-content">
+              <div>
+                <span class="stat-label">Open Compliance Issues</span>
+                <h2 class="stat-value" id="gov-open-issues">0</h2>
+                <span class="stat-subtext" id="gov-overdue-subtext">0 overdue</span>
+              </div>
+              <div class="stat-icon" style="background: var(--danger-glow); color: var(--danger);"><i data-lucide="circle-alert"></i></div>
+            </div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-card-content">
+              <div>
+                <span class="stat-label">Audits Completed</span>
+                <h2 class="stat-value" id="gov-audits-count">0</h2>
+                <span class="stat-subtext">This calendar year</span>
+              </div>
+              <div class="stat-icon" style="background: var(--gold-glow); color: var(--gold);"><i data-lucide="shield-check"></i></div>
+            </div>
+          </div>
+        </div>
+        <!-- Policies & Audits Grid -->
+        <div class="grid-cols-2" style="margin-bottom: 24px;">
+          <!-- Policies Panel -->
+          <div class="card">
+            <h3 class="card-title">Governance Policies</h3>
+            <div style="display: flex; flex-direction: column; gap: 16px;" id="policies-catalog">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+          <!-- Audits Panel -->
+          <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+              <h3 class="card-title" style="margin-bottom:0;">Internal Audits</h3>
+              <button class="btn btn-sm btn-secondary hidden" id="open-audit-modal-btn"><i data-lucide="plus"></i> Add Audit</button>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Audit Title</th>
+                    <th>Department</th>
+                    <th>Date</th>
+                    <th>Findings</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="audits-tbody">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <!-- Compliance Issues Panel -->
+        <div class="card">
+          <h3 class="card-title">Compliance Issues Tracker</h3>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Compliance Issue</th>
+                  <th>Department</th>
+                  <th>Severity</th>
+                  <th>Assigned Owner</th>
+                  <th>Due Date</th>
+                  <th>Status</th>
+                  <th style="width: 130px;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="compliance-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Raise Compliance Issue Modal -->
+        <div class="modal-overlay" id="issue-modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3>Raise Compliance Issue</h3>
+              <button class="modal-close-btn" id="close-issue-modal-btn"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+              <div class="form-field">
+                <label class="form-label" for="issue-title">Issue Title</label>
+                <input type="text" id="issue-title" class="form-input" placeholder="e.g. Incomplete emission logs for Fleet" />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="issue-dept">Target Department</label>
+                <select id="issue-dept" class="form-input"></select>
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="issue-severity">Severity Level</label>
+                <select id="issue-severity" class="form-input">
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="issue-owner">Assigned Owner (Name)</label>
+                <input type="text" id="issue-owner" class="form-input" placeholder="e.g. S. Iyer" />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="issue-due">Due Date</label>
+                <input type="date" id="issue-due" class="form-input" />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="issue-desc">Description</label>
+                <textarea id="issue-desc" class="form-input" placeholder="Describe the policy violation or compliance issue..."></textarea>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" id="cancel-issue-btn">Cancel</button>
+              <button class="btn btn-primary" id="save-issue-btn">Raise Issue</button>
+            </div>
+          </div>
+        </div>
+        <!-- Add Audit Modal -->
+        <div class="modal-overlay" id="audit-modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3>Record Governance Audit</h3>
+              <button class="modal-close-btn" id="close-audit-modal-btn"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+              <div class="form-field">
+                <label class="form-label" for="audit-title">Audit Title</label>
+                <input type="text" id="audit-title" class="form-input" placeholder="e.g. Q3 Environmental Safety Audit" />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="audit-dept">Department</label>
+                <select id="audit-dept" class="form-input"></select>
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="audit-date">Audit Date</label>
+                <input type="date" id="audit-date" class="form-input" />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="audit-findings">Number of Findings</label>
+                <input type="number" id="audit-findings" class="form-input" placeholder="e.g. 0" min="0" value="0" />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="audit-status">Audit Status</label>
+                <select id="audit-status" class="form-input">
+                  <option value="In Progress">In Progress</option>
+                  <option value="Closed">Closed</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" id="cancel-audit-btn">Cancel</button>
+              <button class="btn btn-primary" id="save-audit-btn">Record Audit</button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="state.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const db = window.EcoDB;
+      const role = db.session.role;
+      const me = db.employees.find(e => e.id === db.session.employeeId) || db.employees[0];
+      // Auto check Open and Overdue compliance issues
+      const today = new Date();
+      let overdueCount = 0;
+      db.complianceIssues.forEach(ci => {
+        if (ci.status === "Open" && new Date(ci.dueDate) < today) {
+          overdueCount++;
+        }
+      });
+      if (role === "admin") {
+        document.getElementById("admin-actions-container").classList.remove("hidden");
+        document.getElementById("open-audit-modal-btn").classList.remove("hidden");
+      }
+      // Populate Department selects
+      const issueDept = document.getElementById("issue-dept");
+      const auditDept = document.getElementById("audit-dept");
+      db.departments.forEach(d => {
+        const optionHTML = `<option value="${d.id}">${d.name}</option>`;
+        issueDept.innerHTML += optionHTML;
+        auditDept.innerHTML += optionHTML;
+      });
+      document.getElementById("issue-due").value = todayISO();
+      document.getElementById("audit-date").value = todayISO();
+      // Render
+      renderData();
+      // Modals
+      const issueModal = document.getElementById("issue-modal");
+      const auditModal = document.getElementById("audit-modal");
+      document.getElementById("open-issue-modal-btn").addEventListener("click", () => issueModal.classList.add("show"));
+      document.getElementById("close-issue-modal-btn").addEventListener("click", () => issueModal.classList.remove("show"));
+      document.getElementById("cancel-issue-btn").addEventListener("click", () => issueModal.classList.remove("show"));
+      document.getElementById("open-audit-modal-btn").addEventListener("click", () => auditModal.classList.add("show"));
+      document.getElementById("close-audit-modal-btn").addEventListener("click", () => auditModal.classList.remove("show"));
+      document.getElementById("cancel-audit-btn").addEventListener("click", () => auditModal.classList.remove("show"));
+      // Save Compliance Issue
+      document.getElementById("save-issue-btn").addEventListener("click", () => {
+        const title = document.getElementById("issue-title").value;
+        const deptId = issueDept.value;
+        const severity = document.getElementById("issue-severity").value;
+        const owner = document.getElementById("issue-owner").value;
+        const dueDate = document.getElementById("issue-due").value;
+        const desc = document.getElementById("issue-desc").value;
+        if (!title || !owner || !dueDate) {
+          showToast("Please fill in Title, Owner, and Due Date.", "warning");
+          return;
+        }
+        db.complianceIssues.unshift({
+          id: uid("ci"),
+          title,
+          severity,
+          owner,
+          dueDate,
+          status: "Open",
+          description: desc,
+          departmentId: deptId
+        });
+        localStorage.setItem("ecosphere_data", JSON.stringify(db));
+        issueModal.classList.remove("show");
+        showToast("Compliance issue logged successfully.");
+        triggerNotification(`New compliance issue raised: ${title} (${severity} severity)`, "all", "compliance");
+        
+        // Reset
+        document.getElementById("issue-title").value = "";
+        document.getElementById("issue-owner").value = "";
+        document.getElementById("issue-desc").value = "";
+        
+        renderData();
+      });
+      // Save Audit
+      document.getElementById("save-audit-btn").addEventListener("click", () => {
+        const title = document.getElementById("audit-title").value;
+        const deptId = auditDept.value;
+        const date = document.getElementById("audit-date").value;
+        const findings = Number(document.getElementById("audit-findings").value);
+        const status = document.getElementById("audit-status").value;
+        if (!title) {
+          showToast("Please enter an Audit Title.", "warning");
+          return;
+        }
+        const deptObj = db.departments.find(d => d.id === deptId);
+        db.audits.unshift({
+          id: uid("a"),
+          title,
+          department: deptObj ? deptObj.name : 'Unknown',
+          date,
+          findings,
+          status
+        });
+        localStorage.setItem("ecosphere_data", JSON.stringify(db));
+        auditModal.classList.remove("show");
+        showToast("Governance audit recorded.");
+        
+        // Reset
+        document.getElementById("audit-title").value = "";
+        document.getElementById("audit-findings").value = "0";
+        renderData();
+      });
+      // Acknowledge Policy Click handler
+      window.acknowledgePolicyClick = function(policyId) {
+        // Add acknowledgement
+        db.acknowledgements.push({
+          id: uid("ack"),
+          policyId: policyId,
+          employeeId: me.id,
+          acknowledgedAt: todayISO()
+        });
+        localStorage.setItem("ecosphere_data", JSON.stringify(db));
+        showToast("Policy acknowledged successfully!");
+        renderData();
+      };
+      // Change compliance status handler
+      window.changeIssueStatus = function(id, selectElement) {
+        const status = selectElement.value;
+        const issue = db.complianceIssues.find(ci => ci.id === id);
+        if (issue) {
+          issue.status = status;
+          localStorage.setItem("ecosphere_data", JSON.stringify(db));
+          showToast(`Issue status set to: ${status}`);
+          renderData();
+        }
+      };
+      function renderData() {
+        const scores = getScores(db);
+        const todayStr = todayISO();
+        // Metrics
+        const publishedCount = db.policies.filter(p => p.status === "Published").length;
+        document.getElementById("gov-policy-count").innerText = publishedCount;
+        const ackCount = db.acknowledgements.length;
+        const possibleAck = db.employees.length * publishedCount || 1;
+        const ackRate = clamp((ackCount / possibleAck) * 100);
+        document.getElementById("gov-ack-rate").innerText = `${Math.round(ackRate)}%`;
+        const openCount = db.complianceIssues.filter(c => c.status !== "Resolved").length;
+        let overdueCount = 0;
+        db.complianceIssues.forEach(ci => {
+          if (ci.status === "Open" && ci.dueDate < todayStr) {
+            overdueCount++;
+          }
+        });
+        document.getElementById("gov-open-issues").innerText = openCount;
+        document.getElementById("gov-overdue-subtext").innerText = `${overdueCount} overdue`;
+        const closedAudits = db.audits.filter(a => a.status === "Closed").length;
+        document.getElementById("gov-audits-count").innerText = closedAudits;
+        // Policies List
+        const policiesCatalog = document.getElementById("policies-catalog");
+        policiesCatalog.innerHTML = "";
+        db.policies.forEach(p => {
+          // Check if current user acknowledged
+          const myAcks = db.acknowledgements.filter(a => a.employeeId === me.id).map(a => a.policyId);
+          const hasAcked = myAcks.includes(p.id);
+          let footerActionHTML = "";
+          if (role === "employee" && p.status === "Published") {
+            if (hasAcked) {
+              footerActionHTML = `<span style="color:var(--forest); font-size:12.5px; font-weight:700;"><i data-lucide="badge-check" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"></i> Acknowledged</span>`;
+            } else {
+              footerActionHTML = `<button class="btn btn-sm btn-primary" onclick="acknowledgePolicyClick('${p.id}')">Acknowledge</button>`;
+            }
+          } else {
+            footerActionHTML = `<span class="pill pill-${p.status === 'Published' ? 'green' : 'neutral'}">${p.status}</span>`;
+          }
+          const card = document.createElement("div");
+          card.style.padding = "16px";
+          card.style.background = "rgba(255,255,255,0.01)";
+          card.style.border = "1px solid var(--border)";
+          card.style.borderRadius = "12px";
+          card.style.display = "flex";
+          card.style.justifyContent = "between";
+          card.style.alignItems = "center";
+          
+          card.innerHTML = `
+            <div style="flex:1; margin-right: 16px;">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="pill pill-blue" style="font-size:10px;">Policy ${p.version}</span>
+                <span style="font-size:11px; color:var(--text-muted);">Published: ${fmtDate(p.createdAt)}</span>
+              </div>
+              <h4 style="font-size: 14.5px; font-weight: 700; color:#fff;">${p.title}</h4>
+              <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 4px; line-height: 1.4;">${p.description}</p>
+            </div>
+            <div>
+              ${footerActionHTML}
+            </div>
+          `;
+          policiesCatalog.appendChild(card);
+        });
+        // Audits Table
+        const auditsTbody = document.getElementById("audits-tbody");
+        auditsTbody.innerHTML = "";
+        db.audits.forEach(a => {
+          const row = document.createElement("tr");
+          let tone = a.status === "Closed" ? "green" : "blue";
+          row.innerHTML = `
+            <td><strong>${a.title}</strong></td>
+            <td>${a.department}</td>
+            <td>${fmtDate(a.date)}</td>
+            <td><span class="pill pill-${a.findings > 0 ? 'red' : 'green'}">${a.findings} findings</span></td>
+            <td><span class="pill pill-${tone}">${a.status}</span></td>
+          `;
+          auditsTbody.appendChild(row);
+        });
+        // Compliance Table
+        const complianceTbody = document.getElementById("compliance-tbody");
+        complianceTbody.innerHTML = "";
+        db.complianceIssues.forEach(ci => {
+          const deptObj = db.departments.find(d => d.id === ci.departmentId);
+          const isOverdue = ci.status === "Open" && ci.dueDate < todayStr;
+          
+          let severityTone = "neutral";
+          if (ci.severity === "High") severityTone = "red";
+          if (ci.severity === "Medium") severityTone = "gold";
+          if (ci.severity === "Low") severityTone = "blue";
+          let statusSelector = `<span class="pill pill-${ci.status === 'Resolved' ? 'green' : isOverdue ? 'red' : 'gold'}">${isOverdue ? 'Overdue' : ci.status}</span>`;
+          if (role === "admin") {
+            statusSelector = `
+              <select class="form-input" style="font-size:12px; padding:4px 8px; width:auto;" onchange="changeIssueStatus('${ci.id}', this)">
+                <option value="Open" ${ci.status === 'Open' ? 'selected' : ''}>Open</option>
+                <option value="In Progress" ${ci.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                <option value="Resolved" ${ci.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+              </select>
+            `;
+          }
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td><strong>${ci.title}</strong><div style="font-size:11px; color:var(--text-muted); margin-top:2px;">${ci.description || ''}</div></td>
+            <td>${deptObj ? deptObj.name : 'Unknown'}</td>
+            <td><span class="pill pill-${severityTone}">${ci.severity}</span></td>
+            <td>${ci.owner}</td>
+            <td style="color: ${isOverdue ? 'var(--danger)' : 'var(--text-primary)'}; font-weight: ${isOverdue ? '700' : 'normal'}">
+              ${fmtDate(ci.dueDate)}
+              ${isOverdue ? '<span style="display:block; font-size:10px; color:var(--danger);">OVERDUE</span>' : ''}
+            </td>
+            <td>${statusSelector}</td>
+            <td>
+              ${role === 'admin' ? `<button class="delete-issue-btn" data-id="${ci.id}" style="background: none; border: none; color: var(--danger); cursor: pointer;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>` : '—'}
+            </td>
+          `;
+          complianceTbody.appendChild(row);
+        });
+        // Add Delete event handlers
+        if (role === "admin") {
+          document.querySelectorAll(".delete-issue-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+              const id = btn.getAttribute("data-id");
+              db.complianceIssues = db.complianceIssues.filter(ci => ci.id !== id);
+              localStorage.setItem("ecosphere_data", JSON.stringify(db));
+              showToast("Compliance issue deleted.", "info");
+              renderData();
+            });
+          });
+        }
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      }
+    });
+  </script>
+</body>
+</html>

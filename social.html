@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoSphere - Social Module</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div id="app-layout">
+    <div class="main-wrapper">
+      <main class="page-container tab-content">
+        
+        <div class="section-header">
+          <div class="section-title-wrapper">
+            <div class="section-icon-container" style="background: var(--gold-glow); color: var(--gold);">
+              <i data-lucide="users"></i>
+            </div>
+            <div>
+              <h1 class="section-title">Social Responsibility & Diversity</h1>
+              <p class="section-subtitle">CSR activities, employee engagement, diversity, and training</p>
+            </div>
+          </div>
+          <div id="admin-actions-container" class="hidden">
+            <button class="btn btn-primary" id="open-csr-modal-btn">
+              <i data-lucide="plus"></i> Add CSR Activity
+            </button>
+          </div>
+        </div>
+        <!-- Upper Metrics -->
+        <div class="grid-cols-4" style="margin-bottom: 24px;">
+          <div class="card stat-card">
+            <div class="stat-card-content">
+              <div>
+                <span class="stat-label">CSR Activities</span>
+                <h2 class="stat-value" id="soc-act-count">0</h2>
+                <span class="stat-subtext">Active CSR campaigns</span>
+              </div>
+              <div class="stat-icon" style="background: var(--gold-glow); color: var(--gold);"><i data-lucide="award"></i></div>
+            </div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-card-content">
+              <div>
+                <span class="stat-label">Total Participation</span>
+                <h2 class="stat-value" id="soc-total-part">0</h2>
+                <span class="stat-subtext">Employee logs</span>
+              </div>
+              <div class="stat-icon" style="background: var(--forest-glow); color: var(--forest);"><i data-lucide="users"></i></div>
+            </div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-card-content">
+              <div>
+                <span class="stat-label">Diversity Balance</span>
+                <h2 class="stat-value">40 : 60</h2>
+                <span class="stat-subtext">Female : Male ratio</span>
+              </div>
+              <div class="stat-icon" style="background: var(--blue-glow); color: var(--blue);"><i data-lucide="user"></i></div>
+            </div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-card-content">
+              <div>
+                <span class="stat-label">ESG Training Rate</span>
+                <h2 class="stat-value" id="soc-training-rate">78%</h2>
+                <span class="stat-subtext">Completion status</span>
+              </div>
+              <div class="stat-icon" style="background: var(--forest-glow); color: var(--forest);"><i data-lucide="badge-check"></i></div>
+            </div>
+          </div>
+        </div>
+        <!-- Charts & Catalog Grid -->
+        <div class="grid-cols-2" style="margin-bottom: 24px;">
+          <!-- CSR catalog -->
+          <div class="card">
+            <h3 class="card-title">CSR Activity Catalog</h3>
+            <div id="csr-catalog" style="display: flex; flex-direction: column; gap: 16px;">
+              <!-- Dynamic CSR Activities catalog -->
+            </div>
+          </div>
+          <!-- Diversity Charts -->
+          <div class="card">
+            <h3 class="card-title">Diversity Metrics - Gender Distribution</h3>
+            <div style="position: relative; height: 260px; width: 100%;">
+              <canvas id="diversityChart"></canvas>
+            </div>
+          </div>
+        </div>
+        <!-- Participation Table -->
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 class="card-title" style="margin-bottom: 0;">Employee CSR Participation logs</h3>
+            <span class="pill pill-gold" id="evidence-warning-pill" style="display:none;"><i data-lucide="circle-alert" style="width:12px; height:12px; margin-right:4px;"></i> Evidence Requirement ON</span>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th>CSR Activity</th>
+                  <th>Points</th>
+                  <th>Proof File</th>
+                  <th>Status</th>
+                  <th style="width: 140px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="csr-part-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Add CSR Activity Modal -->
+        <div class="modal-overlay" id="csr-modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3>Create CSR Activity</h3>
+              <button class="modal-close-btn" id="close-csr-modal-btn"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+              <div class="form-field">
+                <label class="form-label" for="csr-title">Activity Title</label>
+                <input type="text" id="csr-title" class="form-input" placeholder="e.g. City Park Cleanup" />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="csr-category">Category</label>
+                <select id="csr-category" class="form-input"></select>
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="csr-points">Points Awarded</label>
+                <input type="number" id="csr-points" class="form-input" placeholder="e.g. 50" min="0" />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="csr-date">Target Date</label>
+                <input type="date" id="csr-date" class="form-input" />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="csr-desc">Description</label>
+                <textarea id="csr-desc" class="form-input" placeholder="Provide details of the CSR initiative..."></textarea>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" id="cancel-csr-btn">Cancel</button>
+              <button class="btn btn-primary" id="save-csr-btn">Create</button>
+            </div>
+          </div>
+        </div>
+        <!-- Submit Participation Modal -->
+        <div class="modal-overlay" id="part-modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3>Submit CSR Participation</h3>
+              <button class="modal-close-btn" id="close-part-modal-btn"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+              <p style="font-size:13px; color:var(--text-muted); margin-bottom: 16px;" id="part-modal-subtitle"></p>
+              <div class="form-field">
+                <label class="form-label" for="part-proof">Upload Evidence File</label>
+                <input type="file" id="part-proof" class="form-input" />
+                <span style="font-size:11px; color:var(--text-muted); margin-top:4px; display:block;">Supported types: PNG, JPG, PDF</span>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" id="cancel-part-btn">Cancel</button>
+              <button class="btn btn-primary" id="submit-part-btn">Submit Participation</button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="state.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const db = window.EcoDB;
+      const role = db.session.role;
+      const me = db.employees.find(e => e.id === db.session.employeeId) || db.employees[0];
+      if (role === "admin") {
+        document.getElementById("admin-actions-container").classList.remove("hidden");
+      }
+      if (db.esgConfig.evidenceRequired) {
+        document.getElementById("evidence-warning-pill").style.display = "inline-flex";
+      }
+      // Populate Category select
+      const csrCategory = document.getElementById("csr-category");
+      db.categories.forEach(c => {
+        if (c.type === "CSR Activity") {
+          csrCategory.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+        }
+      });
+      document.getElementById("csr-date").value = todayISO();
+      // Render initial setup
+      renderData();
+      // Modals
+      const csrModal = document.getElementById("csr-modal");
+      const partModal = document.getElementById("part-modal");
+      document.getElementById("close-csr-modal-btn").addEventListener("click", () => csrModal.classList.remove("show"));
+      document.getElementById("cancel-csr-btn").addEventListener("click", () => csrModal.classList.remove("show"));
+      
+      if (role === "admin") {
+        document.getElementById("open-csr-modal-btn").addEventListener("click", () => csrModal.classList.add("show"));
+      }
+      document.getElementById("close-part-modal-btn").addEventListener("click", () => partModal.classList.remove("show"));
+      document.getElementById("cancel-part-btn").addEventListener("click", () => partModal.classList.remove("show"));
+      // Save CSR
+      document.getElementById("save-csr-btn").addEventListener("click", () => {
+        const title = document.getElementById("csr-title").value;
+        const category = csrCategory.value;
+        const points = Number(document.getElementById("csr-points").value);
+        const date = document.getElementById("csr-date").value;
+        const desc = document.getElementById("csr-desc").value;
+        if (!title || !points || points <= 0) {
+          showToast("Please enter valid Title and Points.", "warning");
+          return;
+        }
+        db.csrActivities.unshift({
+          id: uid("csr"),
+          title,
+          category,
+          description: desc,
+          date,
+          points,
+          status: "Active"
+        });
+        localStorage.setItem("ecosphere_data", JSON.stringify(db));
+        csrModal.classList.remove("show");
+        showToast("CSR Activity created successfully!");
+        
+        // Reset
+        document.getElementById("csr-title").value = "";
+        document.getElementById("csr-points").value = "";
+        document.getElementById("csr-desc").value = "";
+        document.getElementById("csr-date").value = todayISO();
+        
+        renderData();
+      });
+      let targetActivityId = null;
+      // Submit Participation Click (called from catalog buttons)
+      window.openSubmitParticipation = function(activityId, title) {
+        targetActivityId = activityId;
+        document.getElementById("part-modal-subtitle").innerText = `Participating in: "${title}". Please upload your file upload proof below.`;
+        document.getElementById("part-proof").value = "";
+        partModal.classList.add("show");
+      };
+      // Submit Participation Save
+      document.getElementById("submit-part-btn").addEventListener("click", () => {
+        const fileInput = document.getElementById("part-proof");
+        let proofFile = "";
+        
+        if (fileInput.files.length > 0) {
+          proofFile = fileInput.files[0].name;
+        }
+        // If evidence toggle is active, require proof
+        if (db.esgConfig.evidenceRequired && !proofFile) {
+          showToast("Evidence proof file is required to submit participation.", "danger");
+          return;
+        }
+        // Add participation log
+        db.participation.unshift({
+          id: uid("part"),
+          activityId: targetActivityId,
+          employeeId: me.id,
+          proof: proofFile,
+          approvalStatus: "Pending",
+          pointsEarned: 0,
+          completionDate: ""
+        });
+        localStorage.setItem("ecosphere_data", JSON.stringify(db));
+        partModal.classList.remove("show");
+        showToast("Participation logged. Pending admin approval.");
+        renderData();
+      });
+      let diversityChartInstance = null;
+      function renderData() {
+        // Active CSR count
+        const activeCount = db.csrActivities.filter(a => a.status === "Active").length;
+        document.getElementById("soc-act-count").innerText = activeCount;
+        
+        // Total participation logs
+        document.getElementById("soc-total-part").innerText = db.participation.length;
+        // CSR Catalog Render
+        const catalog = document.getElementById("csr-catalog");
+        catalog.innerHTML = "";
+        
+        db.csrActivities.forEach(act => {
+          // Check if employee has joined
+          const hasJoined = db.participation.some(p => p.activityId === act.id && p.employeeId === me.id);
+          
+          let actionHTML = "";
+          if (role === "employee" && act.status === "Active") {
+            if (hasJoined) {
+              actionHTML = `<span class="pill pill-green"><i data-lucide="check" style="width:12px; height:12px; margin-right:4px;"></i> Joined</span>`;
+            } else {
+              actionHTML = `<button class="btn btn-sm btn-primary" onclick="openSubmitParticipation('${act.id}', '${act.title}')">Participate</button>`;
+            }
+          } else if (act.status === "Completed") {
+            actionHTML = `<span class="pill pill-neutral">Completed</span>`;
+          }
+          const item = document.createElement("div");
+          item.style.padding = "16px";
+          item.style.background = "rgba(255,255,255,0.01)";
+          item.style.border = "1px solid var(--border)";
+          item.style.borderRadius = "12px";
+          item.style.display = "flex";
+          item.style.justifyContent = "between";
+          item.style.alignItems = "center";
+          
+          item.innerHTML = `
+            <div style="flex:1; margin-right: 16px;">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="pill pill-gold" style="font-size:10px;">${act.category}</span>
+                <span class="pill pill-neutral" style="font-size:10px;">+${act.points} Pts</span>
+              </div>
+              <h4 style="font-size: 14.5px; font-weight: 700; color:#fff;">${act.title}</h4>
+              <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 4px; line-height: 1.4;">${act.description || 'No description provided.'}</p>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;"><i data-lucide="calendar" style="width:11px; height:11px; vertical-align:middle; margin-right:4px;"></i> Date: ${fmtDate(act.date)}</div>
+            </div>
+            <div>
+              ${actionHTML}
+            </div>
+          `;
+          catalog.appendChild(item);
+        });
+        // Participation Table Render
+        const tbody = document.getElementById("csr-part-tbody");
+        tbody.innerHTML = "";
+        db.participation.forEach(p => {
+          const emp = db.employees.find(e => e.id === p.employeeId);
+          const act = db.csrActivities.find(a => a.id === p.activityId);
+          
+          let tone = "neutral";
+          if (p.approvalStatus === "Approved") tone = "green";
+          if (p.approvalStatus === "Pending") tone = "gold";
+          if (p.approvalStatus === "Rejected") tone = "red";
+          let actionsHTML = "—";
+          if (role === "admin" && p.approvalStatus === "Pending") {
+            actionsHTML = `
+              <div style="display:flex; gap:6px;">
+                <button class="btn btn-sm btn-primary approve-btn" data-id="${p.id}" style="padding: 4px 8px; font-size:11.5px;"><i data-lucide="check" style="width:12px; height:12px;"></i> Approve</button>
+                <button class="btn btn-sm btn-danger reject-btn" data-id="${p.id}" style="padding: 4px 8px; font-size:11.5px;"><i data-lucide="x" style="width:12px; height:12px;"></i> Reject</button>
+              </div>
+            `;
+          }
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td><strong>${emp ? emp.name : 'Unknown'}</strong></td>
+            <td>${act ? act.title : 'Unknown activity'}</td>
+            <td><span class="pill pill-gold">${act ? act.points : 0} Pts</span></td>
+            <td>${p.proof ? `<span style="color:var(--forest); font-size:12px;"><i data-lucide="upload" style="width:11px; height:11px; margin-right:4px;"></i> ${p.proof}</span>` : '<span style="color:var(--danger); font-size:12px;"><i data-lucide="circle-alert" style="width:11px; height:11px; margin-right:4px;"></i> None</span>'}</td>
+            <td><span class="pill pill-${tone}">${p.approvalStatus}</span></td>
+            <td>${actionsHTML}</td>
+          `;
+          tbody.appendChild(row);
+        });
+        // Approve / Reject Handlers
+        if (role === "admin") {
+          document.querySelectorAll(".approve-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+              const partId = btn.getAttribute("data-id");
+              const p = db.participation.find(x => x.id === partId);
+              const act = db.csrActivities.find(a => a.id === p.activityId);
+              const emp = db.employees.find(e => e.id === p.employeeId);
+              // CHECK COMPLIANCE RULE: Evidence Requirement
+              if (db.esgConfig.evidenceRequired && !p.proof) {
+                showToast("Cannot approve: Evidence proof file is missing!", "danger");
+                return;
+              }
+              p.approvalStatus = "Approved";
+              p.pointsEarned = act.points;
+              p.completionDate = todayISO();
+              // Add XP and Points to employee balance
+              if (emp) {
+                emp.points += act.points;
+                emp.xp += act.points * 2; // XP matches points weight double
+              }
+              localStorage.setItem("ecosphere_data", JSON.stringify(db));
+              showToast(`Approved participation for ${emp ? emp.name : 'employee'}`);
+              triggerNotification(`CSR Approved: "${act.title}" participation (+${act.points} pts)`, p.employeeId, "social");
+              
+              // Trigger badge check immediately
+              checkBadgeAutoAward(p.employeeId);
+              
+              renderData();
+            });
+          });
+          document.querySelectorAll(".reject-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+              const partId = btn.getAttribute("data-id");
+              const p = db.participation.find(x => x.id === partId);
+              const act = db.csrActivities.find(a => a.id === p.activityId);
+              const emp = db.employees.find(e => e.id === p.employeeId);
+              p.approvalStatus = "Rejected";
+              localStorage.setItem("ecosphere_data", JSON.stringify(db));
+              showToast(`Rejected participation for ${emp ? emp.name : 'employee'}`, "warning");
+              triggerNotification(`CSR Rejected: "${act.title}" participation request`, p.employeeId, "social");
+              renderData();
+            });
+          });
+        }
+        // Diversity Pie Chart
+        const chartCanvas = document.getElementById("diversityChart");
+        if (chartCanvas) {
+          if (diversityChartInstance) {
+            diversityChartInstance.destroy();
+          }
+          const ctx = chartCanvas.getContext('2d');
+          diversityChartInstance = new Chart(ctx, {
+            type: 'pie',
+            data: {
+              labels: ['Female Employees', 'Male Employees', 'Other'],
+              datasets: [{
+                data: [40, 56, 4],
+                backgroundColor: ['#b4862e', '#33507a', '#0b5d46'],
+                borderColor: '#11201c',
+                borderWidth: 2
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: 'bottom',
+                  labels: { color: '#94a89f', font: { size: 12 } }
+                }
+              }
+            }
+          });
+        }
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      }
+    });
+  </script>
+</body>
+</html>

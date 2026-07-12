@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoSphere - Settings & Configurations</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div id="app-layout">
+    <div class="main-wrapper">
+      <main class="page-container tab-content">
+        
+        <div class="section-header">
+          <div class="section-title-wrapper">
+            <div class="section-icon-container" style="background: var(--blue-glow); color: var(--blue);">
+              <i data-lucide="settings"></i>
+            </div>
+            <div>
+              <h1 class="section-title">Settings & Administrations</h1>
+              <p class="section-subtitle">Manage ESG business rules, departments, factors, products and ERP simulations</p>
+            </div>
+          </div>
+        </div>
+        <div id="settings-restricted-message" class="card hidden" style="margin-bottom: 24px;">
+          <div style="display:flex; align-items:center; gap:12px; color:var(--gold);">
+            <i data-lucide="circle-alert" style="width:24px; height:24px;"></i>
+            <div>
+              <h4 style="font-weight:700;">Admin Mode Required</h4>
+              <p style="font-size:12.5px; color:var(--text-muted); margin-top:2px;">Please switch to Admin Mode in the bottom left sidebar to edit settings.</p>
+            </div>
+          </div>
+        </div>
+        <div id="settings-main-container">
+          <!-- Configuration Toggles -->
+          <div class="grid-cols-2" style="margin-bottom: 24px;">
+            <!-- Core Configurations -->
+            <div class="card">
+              <h3 class="card-title">Core ESG Configuration Rules</h3>
+              
+              <div class="form-field" style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <span style="font-size:13.5px; font-weight:700; display:block;">Auto Emission Calculation</span>
+                  <span style="font-size:11.5px; color:var(--text-muted); display:block; margin-top:2px;">Automatically calculate emissions from ERP operations logs</span>
+                </div>
+                <input type="checkbox" id="cfg-auto-emission" style="width:20px; height:20px; cursor:pointer;" />
+              </div>
+              <div class="form-field" style="display:flex; justify-content:space-between; align-items:center; margin-top:16px;">
+                <div>
+                  <span style="font-size:13.5px; font-weight:700; display:block;">Evidence Proof Requirement</span>
+                  <span style="font-size:11.5px; color:var(--text-muted); display:block; margin-top:2px;">Require uploaded proof file for CSR activity approval</span>
+                </div>
+                <input type="checkbox" id="cfg-evidence" style="width:20px; height:20px; cursor:pointer;" />
+              </div>
+              <div class="form-field" style="display:flex; justify-content:space-between; align-items:center; margin-top:16px;">
+                <div>
+                  <span style="font-size:13.5px; font-weight:700; display:block;">Badge Auto-Award</span>
+                  <span style="font-size:11.5px; color:var(--text-muted); display:block; margin-top:2px;">Assign badges immediately when employees satisfy unlock criteria</span>
+                </div>
+                <input type="checkbox" id="cfg-badge" style="width:20px; height:20px; cursor:pointer;" />
+              </div>
+            </div>
+            <!-- Score Weighting Configuration -->
+            <div class="card">
+              <h3 class="card-title">ESG Reporting Weightings</h3>
+              <div style="display:flex; gap:16px; margin-bottom:14px;">
+                <div class="form-field" style="flex:1;">
+                  <label class="form-label" for="cfg-weight-e">Environmental %</label>
+                  <input type="number" id="cfg-weight-e" class="form-input" min="0" max="100" />
+                </div>
+                <div class="form-field" style="flex:1;">
+                  <label class="form-label" for="cfg-weight-s">Social %</label>
+                  <input type="number" id="cfg-weight-s" class="form-input" min="0" max="100" />
+                </div>
+                <div class="form-field" style="flex:1;">
+                  <label class="form-label" for="cfg-weight-g">Governance %</label>
+                  <input type="number" id="cfg-weight-g" class="form-input" min="0" max="100" />
+                </div>
+              </div>
+              <div id="weight-warning" style="font-size:12px; color:var(--danger); margin-bottom:12px; font-weight:600; display:none;">
+                <i data-lucide="circle-alert" style="width:12px; height:12px; vertical-align:middle; margin-right:4px;"></i> Total weights must sum to exactly 100%! (Current: <span id="weight-total-display">0</span>%)
+              </div>
+              <button class="btn btn-primary w-full" id="save-cfg-btn"><i data-lucide="check"></i> Save Rules & Weightings</button>
+            </div>
+          </div>
+          <!-- Master configurations navigation tabs -->
+          <div style="display:flex; border-bottom:1px solid var(--border); margin-bottom:20px; gap:8px;">
+            <button class="btn btn-secondary btn-sm active settings-tab-btn" data-tab="depts-panel">Departments</button>
+            <button class="btn btn-secondary btn-sm settings-tab-btn" data-tab="factors-panel">Emission Factors</button>
+            <button class="btn btn-secondary btn-sm settings-tab-btn" data-tab="products-panel">Product Profiles</button>
+            <button class="btn btn-secondary btn-sm settings-tab-btn" data-tab="erp-panel">ERP Simulator</button>
+          </div>
+          <!-- Departments panel -->
+          <div id="depts-panel" class="settings-panel">
+            <div class="card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h3 class="card-title" style="margin-bottom:0;">Departments Management</h3>
+                <button class="btn btn-sm btn-primary" id="add-dept-btn"><i data-lucide="plus"></i> Add Department</button>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Code</th>
+                      <th>Department Name</th>
+                      <th>Head of Dept</th>
+                      <th>Employee Count</th>
+                      <th>Status</th>
+                      <th style="width:50px;"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="depts-tbody">
+                    <!-- Dynamic -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <!-- Emission Factors panel -->
+          <div id="factors-panel" class="settings-panel hidden">
+            <div class="card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h3 class="card-title" style="margin-bottom:0;">Emission Factors Configuration</h3>
+                <button class="btn btn-sm btn-primary" id="add-factor-btn"><i data-lucide="plus"></i> Add Factor</button>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Parameter Name</th>
+                      <th>Linked ERP Log</th>
+                      <th>Unit of Measure</th>
+                      <th>Emission Factor (kg CO₂e)</th>
+                      <th style="width:50px;"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="factors-tbody">
+                    <!-- Dynamic -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <!-- Products panel -->
+          <div id="products-panel" class="settings-panel hidden">
+            <div class="card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h3 class="card-title" style="margin-bottom:0;">Product ESG Profiles</h3>
+                <button class="btn btn-sm btn-primary" id="add-product-btn"><i data-lucide="plus"></i> Add Product Profile</button>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Product Name</th>
+                      <th>Weight (kg)</th>
+                      <th>Carbon Footprint (kg CO₂e)</th>
+                      <th>Recyclable</th>
+                      <th style="width:50px;"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="products-tbody">
+                    <!-- Dynamic -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <!-- ERP Simulator Panel -->
+          <div id="erp-panel" class="settings-panel hidden">
+            <div class="card" style="margin-bottom: 24px;">
+              <h3 class="card-title">Simulate Daily Business Operations Log</h3>
+              <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px;">Add operational transactions (purchase orders, manufacturing output, fleet refills, travel expenses) to simulate ERP database feeds. If <strong>Auto Emission Calculation</strong> is enabled, these logs automatically trigger carbon transactions.</p>
+              
+              <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:16px; margin-bottom:16px;">
+                <div class="form-field">
+                  <label class="form-label" for="erp-type">Operation Source (ERP)</label>
+                  <select id="erp-type" class="form-input">
+                    <option value="Purchase">Purchase (Electricity)</option>
+                    <option value="Fleet">Fleet (Diesel Refills)</option>
+                    <option value="Manufacturing">Manufacturing Output</option>
+                    <option value="Expense">Expense (Travel)</option>
+                  </select>
+                </div>
+                <div class="form-field">
+                  <label class="form-label" for="erp-ref">Reference Code</label>
+                  <input type="text" id="erp-ref" class="form-input" placeholder="e.g. PO-5510" />
+                </div>
+                <div class="form-field">
+                  <label class="form-label" for="erp-dept">Department</label>
+                  <select id="erp-dept" class="form-input"></select>
+                </div>
+                <div class="form-field">
+                  <label class="form-label" for="erp-qty">Quantity</label>
+                  <input type="number" id="erp-qty" class="form-input" placeholder="e.g. 500" min="0" />
+                </div>
+              </div>
+              <button class="btn btn-primary" id="trigger-erp-btn"><i data-lucide="factory"></i> Push ERP Log Entry</button>
+            </div>
+            <div class="card">
+              <h3 class="card-title">Daily Operations Feed (Simulated ERP logs)</h3>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Ref Code</th>
+                      <th>Source ERP</th>
+                      <th>Quantity</th>
+                      <th>Department</th>
+                      <th>Auto Processed</th>
+                    </tr>
+                  </thead>
+                  <tbody id="erp-tbody">
+                    <!-- Dynamic -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Add Department Modal -->
+        <div class="modal-overlay" id="dept-modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3>Create/Edit Department</h3>
+              <button class="modal-close-btn" id="close-dept-modal-btn"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+              <div class="form-field">
+                <label class="form-label" for="dept-code">Dept Code</label>
+                <input type="text" id="dept-code" class="form-input" placeholder="e.g. LOG" />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="dept-name">Dept Name</label>
+                <input type="text" id="dept-name" class="form-input" placeholder="e.g. Logistics & Fleet" />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="dept-head">Department Head</label>
+                <input type="text" id="dept-head" class="form-input" placeholder="e.g. S. Iyer" />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="dept-emp">Employee Count</label>
+                <input type="number" id="dept-emp" class="form-input" min="0" />
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" id="cancel-dept-btn">Cancel</button>
+              <button class="btn btn-primary" id="save-dept-btn">Save</button>
+            </div>
+          </div>
+        </div>
+        <!-- Add Factor Modal -->
+        <div class="modal-overlay" id="factor-modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3>Configure Emission Factor</h3>
+              <button class="modal-close-btn" id="close-factor-modal-btn"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+              <div class="form-field">
+                <label class="form-label" for="fac-name">Factor Name</label>
+                <input type="text" id="fac-name" class="form-input" placeholder="e.g. Natural Gas" />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="fac-source">Linked Operation Source</label>
+                <select id="fac-source" class="form-input">
+                  <option value="Purchase">Purchase</option>
+                  <option value="Fleet">Fleet</option>
+                  <option value="Manufacturing">Manufacturing</option>
+                  <option value="Expense">Expense</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="fac-unit">Unit of Measure</label>
+                <input type="text" id="fac-unit" class="form-input" placeholder="e.g. kWh, Litre, km" />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="fac-val">Factor (kg CO₂e per Unit)</label>
+                <input type="number" id="fac-val" class="form-input" min="0" step="0.001" placeholder="e.g. 0.71" />
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" id="cancel-factor-btn">Cancel</button>
+              <button class="btn btn-primary" id="save-factor-btn">Save Factor</button>
+            </div>
+          </div>
+        </div>
+        <!-- Add Product Modal -->
+        <div class="modal-overlay" id="product-modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3>Configure Product ESG Profile</h3>
+              <button class="modal-close-btn" id="close-product-modal-btn"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+              <div class="form-field">
+                <label class="form-label" for="prod-name">Product Name</label>
+                <input type="text" id="prod-name" class="form-input" placeholder="e.g. Recycled Keyboard" />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="prod-weight">Weight (kg)</label>
+                <input type="number" id="prod-weight" class="form-input" min="0" step="0.1" />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="prod-carbon">Carbon Profile (kg CO₂e)</label>
+                <input type="number" id="prod-carbon" class="form-input" min="0" step="0.1" />
+              </div>
+              <div class="form-field" style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" id="prod-recycle" style="width:16px; height:16px;" />
+                <label class="form-label" for="prod-recycle" style="margin-bottom:0; cursor:pointer;">Recyclable Material</label>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" id="cancel-product-btn">Cancel</button>
+              <button class="btn btn-primary" id="save-product-btn">Save Product</button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="state.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const db = window.EcoDB;
+      const role = db.session.role;
+      if (role !== "admin") {
+        document.getElementById("settings-restricted-message").classList.remove("hidden");
+        document.getElementById("settings-main-container").classList.add("hidden");
+        return;
+      }
+      // Populate forms from active configurations
+      document.getElementById("cfg-auto-emission").checked = db.esgConfig.autoEmission;
+      document.getElementById("cfg-evidence").checked = db.esgConfig.evidenceRequired;
+      document.getElementById("cfg-badge").checked = db.esgConfig.badgeAutoAward;
+      document.getElementById("cfg-weight-e").value = db.esgConfig.weightE;
+      document.getElementById("cfg-weight-s").value = db.esgConfig.weightS;
+      document.getElementById("cfg-weight-g").value = db.esgConfig.weightG;
+      // Populate Department Filter for ERP
+      const erpDeptSelect = document.getElementById("erp-dept");
+      db.departments.forEach(d => {
+        erpDeptSelect.innerHTML += `<option value="${d.id}">${d.name}</option>`;
+      });
+      // Save global configs
+      document.getElementById("save-cfg-btn").addEventListener("click", () => {
+        const wE = Number(document.getElementById("cfg-weight-e").value);
+        const wS = Number(document.getElementById("cfg-weight-s").value);
+        const wG = Number(document.getElementById("cfg-weight-g").value);
+        if (wE + wS + wG !== 100) {
+          const total = wE + wS + wG;
+          const warning = document.getElementById("weight-warning");
+          document.getElementById("weight-total-display").innerText = total;
+          warning.style.display = "block";
+          showToast("Validation failed: ESG weights must sum to 100%!", "danger");
+          return;
+        }
+        document.getElementById("weight-warning").style.display = "none";
+        
+        db.esgConfig.autoEmission = document.getElementById("cfg-auto-emission").checked;
+        db.esgConfig.evidenceRequired = document.getElementById("cfg-evidence").checked;
+        db.esgConfig.badgeAutoAward = document.getElementById("cfg-badge").checked;
+        db.esgConfig.weightE = wE;
+        db.esgConfig.weightS = wS;
+        db.esgConfig.weightG = wG;
+        localStorage.setItem("ecosphere_data", JSON.stringify(db));
+        showToast("ESG Core Configurations and weights saved successfully.");
+      });
+      // Tab selector events
+      document.querySelectorAll(".settings-tab-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".settings-tab-btn").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          document.querySelectorAll(".settings-panel").forEach(p => p.classList.add("hidden"));
+          const panelId = btn.getAttribute("data-tab");
+          document.getElementById(panelId).classList.remove("hidden");
+        });
+      });
+      // Populate sub-panels
+      renderData();
+      // Modal Triggers
+      const deptModal = document.getElementById("dept-modal");
+      const factorModal = document.getElementById("factor-modal");
+      const productModal = document.getElementById("product-modal");
+      document.getElementById("add-dept-btn").addEventListener("click", () => {
+        activeDeptId = null;
+        document.getElementById("dept-code").value = "";
+        document.getElementById("dept-name").value = "";
+        document.getElementById("dept-head").value = "";
+        document.getElementById("dept-emp").value = "";
+        deptModal.classList.add("show");
+      });
+      document.getElementById("close-dept-modal-btn").addEventListener("click", () => deptModal.classList.remove("show"));
+      document.getElementById("cancel-dept-btn").addEventListener("click", () => deptModal.classList.remove("show"));
+      document.getElementById("add-factor-btn").addEventListener("click", () => {
+        activeFactorId = null;
+        document.getElementById("fac-name").value = "";
+        document.getElementById("fac-unit").value = "";
+        document.getElementById("fac-val").value = "";
+        factorModal.classList.add("show");
+      });
+      document.getElementById("close-factor-modal-btn").addEventListener("click", () => factorModal.classList.remove("show"));
+      document.getElementById("cancel-factor-btn").addEventListener("click", () => factorModal.classList.remove("show"));
+      document.getElementById("add-product-btn").addEventListener("click", () => {
+        activeProductId = null;
+        document.getElementById("prod-name").value = "";
+        document.getElementById("prod-weight").value = "";
+        document.getElementById("prod-carbon").value = "";
+        document.getElementById("prod-recycle").checked = false;
+        productModal.classList.add("show");
+      });
+      document.getElementById("close-product-modal-btn").addEventListener("click", () => productModal.classList.remove("show"));
+      document.getElementById("cancel-product-btn").addEventListener("click", () => productModal.classList.remove("show"));
+      // CRUD states
+      let activeDeptId = null;
+      let activeFactorId = null;
+      let activeProductId = null;
+      // Save Dept
+      document.getElementById("save-dept-btn").addEventListener("click", () => {
+        const code = document.getElementById("dept-code").value;
+        const name = document.getElementById("dept-name").value;
+        const head = document.getElementById("dept-head").value;
+        const empCount = Number(document.getElementById("dept-emp").value) || 0;
+        if (!code || !name || !head) {
+          showToast("Please fill in Dept Code, Name and Head.", "warning");
+          return;
+        }
+        if (activeDeptId) {
+          const d = db.departments.find(x => x.id === activeDeptId);
+          if (d) {
+            d.code = code;
+            d.name = name;
+            d.head = head;
+            d.employeeCount = empCount;
+          }
+        } else {
+          db.departments.push({
+            id: uid("d"),
+            code,
+            name,
+            head,
+            employeeCount: empCount,
+            parentId: "",
+            status: "Active"
+          });
+        }
+        localStorage.setItem("ecosphere_data", JSON.stringify(db));
+        deptModal.classList.remove("show");
+        showToast("Department saved.");
+        renderData();
+      });
+      // Save Factor
+      document.getElementById("save-factor-btn").addEventListener("click", () => {
+        const name = document.getElementById("fac-name").value;
+        const source = document.getElementById("fac-source").value;
+        const unit = document.getElementById("fac-unit").value;
+        const factor = Number(document.getElementById("fac-val").value);
+        if (!name || !unit || isNaN(factor)) {
+          showToast("Please enter a Name, Unit and a Factor.", "warning");
+          return;
+        }
+        if (activeFactorId) {
+          const f = db.emissionFactors.find(x => x.id === activeFactorId);
+          if (f) {
+            f.name = name;
+            f.source = source;
+            f.unit = unit;
+            f.factor = factor;
+          }
+        } else {
+          db.emissionFactors.push({
+            id: uid("ef"),
+            name,
+            source,
+            unit,
+            factor
+          });
+        }
+        localStorage.setItem("ecosphere_data", JSON.stringify(db));
+        factorModal.classList.remove("show");
+        showToast("Emission Factor saved.");
+        renderData();
+      });
+      // Save Product
+      document.getElementById("save-product-btn").addEventListener("click", () => {
+        const name = document.getElementById("prod-name").value;
+        const weight = Number(document.getElementById("prod-weight").value);
+        const carbon = Number(document.getElementById("prod-carbon").value);
+        const recyclable = document.getElementById("prod-recycle").checked;
+        if (!name || isNaN(weight) || isNaN(carbon)) {
+          showToast("Please enter product Name, Weight and Carbon profile.", "warning");
+          return;
+        }
+        if (activeProductId) {
+          const p = db.products.find(x => x.id === activeProductId);
+          if (p) {
+            p.name = name;
+            p.weight = weight;
+            p.carbonProfile = carbon;
+            p.recyclable = recyclable;
+          }
+        } else {
+          db.products.push({
+            id: uid("prod"),
+            name,
+            weight,
+            carbonProfile: carbon,
+            recyclable
+          });
+        }
+        localStorage.setItem("ecosphere_data", JSON.stringify(db));
+        productModal.classList.remove("show");
+        showToast("Product Profile configured.");
+        renderData();
+      });
+      // Edit hooks
+      window.editDeptClick = function(id) {
+        activeDeptId = id;
+        const d = db.departments.find(x => x.id === id);
+        if (d) {
+          document.getElementById("dept-code").value = d.code;
+          document.getElementById("dept-name").value = d.name;
+          document.getElementById("dept-head").value = d.head;
+          document.getElementById("dept-emp").value = d.employeeCount;
+          deptModal.classList.add("show");
+        }
+      };
+      window.editFactorClick = function(id) {
+        activeFactorId = id;
+        const f = db.emissionFactors.find(x => x.id === id);
+        if (f) {
+          document.getElementById("fac-name").value = f.name;
+          document.getElementById("fac-source").value = f.source;
+          document.getElementById("fac-unit").value = f.unit;
+          document.getElementById("fac-val").value = f.factor;
+          factorModal.classList.add("show");
+        }
+      };
+      window.editProductClick = function(id) {
+        activeProductId = id;
+        const p = db.products.find(x => x.id === id);
+        if (p) {
+          document.getElementById("prod-name").value = p.name;
+          document.getElementById("prod-weight").value = p.weight;
+          document.getElementById("prod-carbon").value = p.carbonProfile;
+          document.getElementById("prod-recycle").checked = p.recyclable;
+          productModal.classList.add("show");
+        }
+      };
+      // Trigger ERP simulation log pushing
+      document.getElementById("trigger-erp-btn").addEventListener("click", () => {
+        const type = document.getElementById("erp-type").value;
+        const ref = document.getElementById("erp-ref").value || `REF-${Math.floor(Math.random()*9000)+1000}`;
+        const deptId = erpDeptSelect.value;
+        const quantity = Number(document.getElementById("erp-qty").value);
+        if (!quantity || quantity <= 0) {
+          showToast("Please enter a valid quantity.", "warning");
+          return;
+        }
+        // Add erp transaction log
+        db.businessOperations.unshift({
+          id: uid("op"),
+          type: type,
+          reference: ref,
+          item: type === 'Purchase' ? 'Electricity' : type === 'Fleet' ? 'Diesel refill' : 'Product Batch assembly',
+          quantity: quantity,
+          unit: type === 'Purchase' ? 'kWh' : type === 'Fleet' ? 'Litre' : 'Units produced',
+          departmentId: deptId,
+          date: todayISO(),
+          processed: false
+        });
+        localStorage.setItem("ecosphere_data", JSON.stringify(db));
+        showToast("Simulated ERP operation pushed to data stream.");
+        
+        // Trigger auto emissions check
+        processAutoEmissions();
+        
+        // Refresh
+        document.getElementById("erp-qty").value = "";
+        document.getElementById("erp-ref").value = "";
+        
+        renderData();
+      });
+      function renderData() {
+        // Departments Table
+        const deptsTbody = document.getElementById("depts-tbody");
+        deptsTbody.innerHTML = "";
+        db.departments.forEach(d => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td><strong>${d.code}</strong></td>
+            <td>${d.name}</td>
+            <td>${d.head}</td>
+            <td>${d.employeeCount} employees</td>
+            <td><span class="pill pill-green">${d.status}</span></td>
+            <td>
+              <div style="display:flex; gap:6px;">
+                <button onclick="editDeptClick('${d.id}')" style="background:none; border:none; color:var(--text-muted); cursor:pointer;"><i data-lucide="pencil" style="width:14px; height:14px;"></i></button>
+                <button class="delete-dept-btn" data-id="${d.id}" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i data-lucide="trash-2" style="width:14px; height:14px;"></i></button>
+              </div>
+            </td>
+          `;
+          deptsTbody.appendChild(row);
+        });
+        // Add Delete event handlers for Depts
+        document.querySelectorAll(".delete-dept-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const id = btn.getAttribute("data-id");
+            db.departments = db.departments.filter(d => d.id !== id);
+            localStorage.setItem("ecosphere_data", JSON.stringify(db));
+            showToast("Department removed.", "info");
+            renderData();
+          });
+        });
+        // Factors Table
+        const factorsTbody = document.getElementById("factors-tbody");
+        factorsTbody.innerHTML = "";
+        db.emissionFactors.forEach(f => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td><strong>${f.name}</strong></td>
+            <td><span class="pill pill-blue">${f.source}</span></td>
+            <td>${f.unit}</td>
+            <td style="font-weight:700;">${f.factor}</td>
+            <td>
+              <div style="display:flex; gap:6px;">
+                <button onclick="editFactorClick('${f.id}')" style="background:none; border:none; color:var(--text-muted); cursor:pointer;"><i data-lucide="pencil" style="width:14px; height:14px;"></i></button>
+                <button class="delete-factor-btn" data-id="${f.id}" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i data-lucide="trash-2" style="width:14px; height:14px;"></i></button>
+              </div>
+            </td>
+          `;
+          factorsTbody.appendChild(row);
+        });
+        // Add Delete event handlers for Factors
+        document.querySelectorAll(".delete-factor-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const id = btn.getAttribute("data-id");
+            db.emissionFactors = db.emissionFactors.filter(f => f.id !== id);
+            localStorage.setItem("ecosphere_data", JSON.stringify(db));
+            showToast("Emission Factor config removed.", "info");
+            renderData();
+          });
+        });
+        // Products Table
+        const productsTbody = document.getElementById("products-tbody");
+        productsTbody.innerHTML = "";
+        db.products.forEach(p => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td><strong>${p.name}</strong></td>
+            <td>${p.weight} kg</td>
+            <td style="font-weight:700; color:#ff8873;">${p.carbonProfile} kg CO₂e</td>
+            <td><span class="pill pill-${p.recyclable ? 'green' : 'neutral'}">${p.recyclable ? 'Yes' : 'No'}</span></td>
+            <td>
+              <div style="display:flex; gap:6px;">
+                <button onclick="editProductClick('${p.id}')" style="background:none; border:none; color:var(--text-muted); cursor:pointer;"><i data-lucide="pencil" style="width:14px; height:14px;"></i></button>
+                <button class="delete-prod-btn" data-id="${p.id}" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i data-lucide="trash-2" style="width:14px; height:14px;"></i></button>
+              </div>
+            </td>
+          `;
+          productsTbody.appendChild(row);
+        });
+        // Add Delete event handlers for Products
+        document.querySelectorAll(".delete-prod-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const id = btn.getAttribute("data-id");
+            db.products = db.products.filter(p => p.id !== id);
+            localStorage.setItem("ecosphere_data", JSON.stringify(db));
+            showToast("Product profile removed.", "info");
+            renderData();
+          });
+        });
+        // ERP operations logs Table
+        const erpTbody = document.getElementById("erp-tbody");
+        erpTbody.innerHTML = "";
+        db.businessOperations.forEach(op => {
+          const dept = db.departments.find(d => d.id === op.departmentId);
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${fmtDate(op.date)}</td>
+            <td><code>${op.reference}</code></td>
+            <td><span class="pill pill-blue">${op.type}</span></td>
+            <td>${op.quantity.toLocaleString()} ${op.unit}</td>
+            <td><strong>${dept ? dept.name : 'Unknown'}</strong></td>
+            <td><span class="pill pill-${op.processed ? 'green' : 'gold'}">${op.processed ? 'Yes' : 'No'}</span></td>
+          `;
+          erpTbody.appendChild(row);
+        });
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoSphere - ESG Management Platform</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <div id="app-layout">
+    <div class="main-wrapper">
+      <main class="page-container tab-content">
+        
+        <!-- Admin Dashboard Section -->
+        <div id="admin-dashboard" class="dashboard-view hidden">
+          <div class="section-header">
+            <div class="section-title-wrapper">
+              <div class="section-icon-container">
+                <i data-lucide="layout-dashboard"></i>
+              </div>
+              <div>
+                <h1 class="section-title">Organization Dashboard</h1>
+                <p class="section-subtitle">Real-time ESG performance across the organization</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Score Ring & Metrics Grid -->
+          <div style="display: grid; grid-template-columns: auto 1fr; gap: 24px; margin-bottom: 24px;" class="grid-cols-1-2">
+            <!-- ESG Ring Card -->
+            <div class="card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; min-width: 250px;">
+              <div class="esg-score-ring-wrapper" id="admin-score-ring-container">
+                <!-- SVG injected dynamically -->
+              </div>
+              <div style="display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--forest); display: inline-block;"></span>
+                  <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Env (40%)</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--gold); display: inline-block;"></span>
+                  <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Soc (30%)</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--blue); display: inline-block;"></span>
+                  <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Gov (30%)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid-cols-4">
+              <div class="card stat-card">
+                <div class="stat-card-content">
+                  <div>
+                    <span class="stat-label">Environmental</span>
+                    <h2 class="stat-value" id="stat-env-score">-%</h2>
+                    <span class="stat-subtext">Goal progress avg</span>
+                  </div>
+                  <div class="stat-icon" style="background: var(--forest-glow); color: var(--forest);"><i data-lucide="leaf"></i></div>
+                </div>
+              </div>
+              <div class="card stat-card">
+                <div class="stat-card-content">
+                  <div>
+                    <span class="stat-label">Social</span>
+                    <h2 class="stat-value" id="stat-social-score">-%</h2>
+                    <span class="stat-subtext">Participation & training</span>
+                  </div>
+                  <div class="stat-icon" style="background: var(--gold-glow); color: var(--gold);"><i data-lucide="users"></i></div>
+                </div>
+              </div>
+              <div class="card stat-card">
+                <div class="stat-card-content">
+                  <div>
+                    <span class="stat-label">Governance</span>
+                    <h2 class="stat-value" id="stat-gov-score">-%</h2>
+                    <span class="stat-subtext">Compliance & audits</span>
+                  </div>
+                  <div class="stat-icon" style="background: var(--blue-glow); color: var(--blue);"><i data-lucide="shield-check"></i></div>
+                </div>
+              </div>
+              <div class="card stat-card">
+                <div class="stat-card-content">
+                  <div>
+                    <span class="stat-label">Total Emissions</span>
+                    <h2 class="stat-value" id="stat-emissions">0 t</h2>
+                    <span class="stat-subtext">CO₂e emissions</span>
+                  </div>
+                  <div class="stat-icon" style="background: var(--danger-glow); color: #ff8873;"><i data-lucide="factory"></i></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Section -->
+          <div class="grid-cols-2" style="margin-bottom: 24px;">
+            <div class="card">
+              <h3 class="card-title">Monthly Emissions Trend (kg CO₂e)</h3>
+              <div style="position: relative; height: 220px; width: 100%;">
+                <canvas id="emissionsChart"></canvas>
+              </div>
+            </div>
+            <div class="card">
+              <h3 class="card-title">Department ESG Performance</h3>
+              <div class="ranking-list" id="dept-rankings-list">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Activity & Top Performers Grid -->
+          <div class="grid-cols-2">
+            <!-- Top Performers Card -->
+            <div class="card">
+              <h3 class="card-title">Leaderboard — Top Performers</h3>
+              <div class="leaderboard-list" id="leaderboard-list">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+            <!-- Recent Activity Card -->
+            <div class="card">
+              <h3 class="card-title">Recent Activity</h3>
+              <div style="display: flex; flex-direction: column; gap: 14px;" id="recent-activity-list">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Employee Dashboard Section -->
+        <div id="employee-dashboard" class="dashboard-view hidden">
+          <div class="section-header">
+            <div class="section-title-wrapper">
+              <div class="section-icon-container">
+                <i data-lucide="layout-dashboard"></i>
+              </div>
+              <div>
+                <h1 class="section-title" id="welcome-message">Welcome back, Employee</h1>
+                <p class="section-subtitle">Your personal ESG contribution snapshot</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Employee Stat Cards -->
+          <div class="grid-cols-4" style="margin-bottom: 24px;">
+            <div class="card stat-card">
+              <div class="stat-card-content">
+                <div>
+                  <span class="stat-label">XP Earned</span>
+                  <h2 class="stat-value" id="emp-stat-xp">0 XP</h2>
+                  <span class="stat-subtext">Lifetime total</span>
+                </div>
+                <div class="stat-icon" style="background: var(--gold-glow); color: var(--gold);"><i data-lucide="flame"></i></div>
+              </div>
+            </div>
+            <div class="card stat-card">
+              <div class="stat-card-content">
+                <div>
+                  <span class="stat-label">Points Balance</span>
+                  <h2 class="stat-value" id="emp-stat-points">0 pts</h2>
+                  <span class="stat-subtext">Redeemable balance</span>
+                </div>
+                <div class="stat-icon" style="background: var(--forest-glow); color: var(--forest);"><i data-lucide="gift"></i></div>
+              </div>
+            </div>
+            <div class="card stat-card">
+              <div class="stat-card-content">
+                <div>
+                  <span class="stat-label">Leaderboard Rank</span>
+                  <h2 class="stat-value" id="emp-stat-rank">#0</h2>
+                  <span class="stat-subtext">In the company</span>
+                </div>
+                <div class="stat-icon" style="background: var(--blue-glow); color: var(--blue);"><i data-lucide="trophy"></i></div>
+              </div>
+            </div>
+            <div class="card stat-card">
+              <div class="stat-card-content">
+                <div>
+                  <span class="stat-label">CO₂ Saved</span>
+                  <h2 class="stat-value" id="emp-stat-saved">0 kg</h2>
+                  <span class="stat-subtext">Est. CO₂e avoided</span>
+                </div>
+                <div class="stat-icon" style="background: var(--forest-glow); color: var(--forest);"><i data-lucide="leaf"></i></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Employee details grid -->
+          <div class="grid-cols-3" style="margin-bottom: 24px;">
+            <!-- Badge Cabinet -->
+            <div class="card">
+              <h3 class="card-title">Badge Cabinet</h3>
+              <div class="badge-grid" id="emp-badges-container">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+            <!-- Joined Challenges -->
+            <div class="card">
+              <h3 class="card-title">Joined Challenges</h3>
+              <div style="display: flex; flex-direction: column; gap: 14px;" id="emp-challenges-container">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+            <!-- Pending Policies -->
+            <div class="card">
+              <h3 class="card-title">Policies Pending Action</h3>
+              <div style="display: flex; flex-direction: column; gap: 10px;" id="emp-policies-container">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+
+          <!-- My CSR activities -->
+          <div class="card">
+            <h3 class="card-title">My CSR Activities</h3>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>CSR Activity</th>
+                    <th>XP / Points</th>
+                    <th>Proof Provided</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="emp-csr-tbody">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="state.js"></script>
+  <script>
+    // Page logic
+    document.addEventListener("DOMContentLoaded", () => {
+      const db = window.EcoDB;
+      const scores = getScores(db);
+      const role = db.session.role;
+      const me = db.employees.find(e => e.id === db.session.employeeId) || db.employees[0];
+
+      // Toggle views
+      if (role === "admin") {
+        document.getElementById("admin-dashboard").classList.remove("hidden");
+        initAdminDashboard(db, scores);
+      } else {
+        document.getElementById("employee-dashboard").classList.remove("hidden");
+        initEmployeeDashboard(db, me);
+      }
+
+      function drawScoreRing(containerId, e, s, g, overall) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const size = 180;
+        const stroke = 11;
+        const r1 = size / 2 - stroke;
+        const r2 = r1 - stroke - 4;
+        const r3 = r2 - stroke - 4;
+
+        const circ1 = 2 * Math.PI * r1;
+        const circ2 = 2 * Math.PI * r2;
+        const circ3 = 2 * Math.PI * r3;
+
+        const offset1 = circ1 - (clamp(e) / 100) * circ1;
+        const offset2 = circ2 - (clamp(s) / 100) * circ2;
+        const offset3 = circ3 - (clamp(g) / 100) * circ3;
+
+        container.innerHTML = `
+          <div style="position: relative; width: ${size}px; height: ${size}px;">
+            <svg width="${size}" height="${size}">
+              <!-- Background rings -->
+              <circle cx="${size / 2}" cy="${size / 2}" r="${r1}" stroke="rgba(96, 108, 56, 0.1)" stroke-width="${stroke}" fill="none" />
+              <circle cx="${size / 2}" cy="${size / 2}" r="${r2}" stroke="rgba(96, 108, 56, 0.1)" stroke-width="${stroke}" fill="none" />
+              <circle cx="${size / 2}" cy="${size / 2}" r="${r3}" stroke="rgba(96, 108, 56, 0.1)" stroke-width="${stroke}" fill="none" />
+              <!-- Environmental Ring -->
+              <circle cx="${size / 2}" cy="${size / 2}" r="${r1}" stroke="var(--forest)" stroke-width="${stroke}" fill="none"
+                stroke-dasharray="${circ1} ${circ1}" stroke-dashoffset="${offset1}"
+                stroke-linecap="round" transform="rotate(-90 ${size / 2} ${size / 2})" style="transition: stroke-dashoffset 0.6s ease;" />
+              <!-- Social Ring -->
+              <circle cx="${size / 2}" cy="${size / 2}" r="${r2}" stroke="var(--gold)" stroke-width="${stroke}" fill="none"
+                stroke-dasharray="${circ2} ${circ2}" stroke-dashoffset="${offset2}"
+                stroke-linecap="round" transform="rotate(-90 ${size / 2} ${size / 2})" style="transition: stroke-dashoffset 0.6s ease;" />
+              <!-- Governance Ring -->
+              <circle cx="${size / 2}" cy="${size / 2}" r="${r3}" stroke="var(--blue)" stroke-width="${stroke}" fill="none"
+                stroke-dasharray="${circ3} ${circ3}" stroke-dashoffset="${offset3}"
+                stroke-linecap="round" transform="rotate(-90 ${size / 2} ${size / 2})" style="transition: stroke-dashoffset 0.6s ease;" />
+            </svg>
+            <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <span style="font-family: var(--font-display); font-size: 38px; font-weight: 700; color: var(--text-primary); line-height: 1;">${overall}</span>
+              <span style="font-size: 11px; color: var(--text-muted); font-weight: 700; margin-top: 4px; letter-spacing: 0.5px;">ESG SCORE</span>
+            </div>
+          </div>
+        `;
+      }
+
+      function initAdminDashboard(db, scores) {
+        // Render score rings
+        drawScoreRing("admin-score-ring-container", scores.envAvg, scores.socialAvg, scores.govAvg, scores.overall);
+
+        // Stats values
+        document.getElementById("stat-env-score").innerText = `${scores.envAvg}%`;
+        document.getElementById("stat-social-score").innerText = `${scores.socialAvg}%`;
+        document.getElementById("stat-gov-score").innerText = `${scores.govAvg}%`;
+        document.getElementById("stat-emissions").innerText = `${(scores.totalEmissions / 1000).toFixed(1)} t`;
+
+        // Render Department rankings
+        const deptList = document.getElementById("dept-rankings-list");
+        deptList.innerHTML = "";
+        scores.deptScores.forEach((d, index) => {
+          const row = document.createElement("div");
+          row.className = "ranking-item";
+          row.innerHTML = `
+            <span class="ranking-number">#${index + 1}</span>
+            <span class="ranking-name">${d.name} (${d.code})</span>
+            <div class="progress-container" style="width: 140px; margin-top: 0; margin-right: 12px;">
+              <div class="progress-bar" style="width: ${d.total}%; background: var(--forest);"></div>
+            </div>
+            <span style="font-weight: 700; font-size: 13.5px; width: 32px; text-align: right;">${d.total}</span>
+          `;
+          deptList.appendChild(row);
+        });
+
+        // Top Performers Leaderboard
+        const lbList = document.getElementById("leaderboard-list");
+        lbList.innerHTML = "";
+        const top5 = [...db.employees].sort((a, b) => b.xp - a.xp).slice(0, 5);
+        top5.forEach((e, idx) => {
+          const item = document.createElement("div");
+          item.className = "leaderboard-item";
+          item.innerHTML = `
+            <span class="ranking-number" style="color: ${idx === 0 ? 'var(--gold)' : 'var(--text-muted)'}">#${idx + 1}</span>
+            <div class="user-avatar" style="width: 30px; height: 30px; font-size: 11px;">${e.avatar}</div>
+            <span class="ranking-name">${e.name}</span>
+            <span class="pill pill-gold">${e.xp} XP</span>
+          `;
+          lbList.appendChild(item);
+        });
+
+        // Recent activity feed
+        const activityList = document.getElementById("recent-activity-list");
+        activityList.innerHTML = "";
+        const recents = db.notifications.slice(0, 5);
+        if (recents.length === 0) {
+          activityList.innerHTML = `<div style="color: var(--text-muted); font-size: 12.5px;">No activity logged yet.</div>`;
+        } else {
+          recents.forEach(n => {
+            const item = document.createElement("div");
+            item.style.display = "flex";
+            item.style.alignItems = "flex-start";
+            item.style.gap = "10px";
+            item.innerHTML = `
+              <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--forest); margin-top: 5px; flex-shrink: 0;"></div>
+              <div>
+                <p style="font-size: 13px; color: var(--text-primary); line-height: 1.4;">${n.message}</p>
+                <p style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">${fmtDate(n.date)}</p>
+              </div>
+            `;
+            activityList.appendChild(item);
+          });
+        }
+
+        // Emissions Chart using Chart.js
+        const monthly = {};
+        db.carbonTransactions.forEach(t => {
+          const m = t.date.slice(0, 7); // e.g. "2026-05"
+          monthly[m] = (monthly[m] || 0) + t.emissions;
+        });
+        const chartData = Object.entries(monthly)
+          .sort()
+          .map(([month, val]) => ({ month: month.substring(5), val: Math.round(val) }));
+
+        const ctx = document.getElementById('emissionsChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: chartData.map(d => d.month),
+            datasets: [{
+              label: 'Emissions (kg CO₂e)',
+              data: chartData.map(d => d.val),
+              borderColor: '#283618',
+              backgroundColor: 'rgba(40, 54, 24, 0.08)',
+              borderWidth: 2.5,
+              tension: 0.3,
+              fill: true,
+              pointBackgroundColor: '#283618',
+              pointRadius: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              x: {
+                grid: { display: false },
+                ticks: { color: '#606c38', font: { size: 10 } }
+              },
+              y: {
+                grid: { color: 'rgba(0,0,0,0.04)' },
+                ticks: { color: '#606c38', font: { size: 10 } }
+              }
+            }
+          }
+        });
+      }
+
+      function initEmployeeDashboard(db, me) {
+        // Welcome message
+        const welcome = me.name;
+        document.getElementById("welcome-message").innerText = `Welcome back, ${welcome.split(" ")[0]}`;
+
+        // Personal Stats
+        document.getElementById("emp-stat-xp").innerText = `${me.xp} XP`;
+        document.getElementById("emp-stat-points").innerText = `${me.points} pts`;
+
+        const sortedEmployees = [...db.employees].sort((a, b) => b.xp - a.xp);
+        const myIndex = sortedEmployees.findIndex(e => e.id === me.id);
+        document.getElementById("emp-stat-rank").innerText = `#${myIndex + 1}`;
+
+        // Carbon Saved calculations
+        const myChallenges = db.challengeParticipation.filter(c => c.employeeId === me.id);
+        const myPartCount = db.participation.filter(p => p.employeeId === me.id && p.approvalStatus === "Approved").length;
+        const myApprovedChallengesCount = myChallenges.filter(c => c.approval === "Approved").length;
+        const carbonSaved = Math.round(myApprovedChallengesCount * 12.4 + myPartCount * 6.1);
+        document.getElementById("emp-stat-saved").innerText = `${carbonSaved} kg`;
+
+        // Badges Render
+        const badgeContainer = document.getElementById("emp-badges-container");
+        badgeContainer.innerHTML = "";
+        const myBadges = db.employeeBadges.filter(b => b.employeeId === me.id).map(b => db.badges.find(x => x.id === b.badgeId)).filter(Boolean);
+        if (myBadges.length === 0) {
+          badgeContainer.parentNode.innerHTML = `
+            <h3 class="card-title">Badge Cabinet</h3>
+            <div style="text-align: center; color: var(--text-muted); padding: 20px 0; font-size: 13px;">
+              <i data-lucide="award" style="width: 24px; height: 24px; margin-bottom: 6px; color: var(--text-muted);"></i>
+              <p>No badges unlocked yet.</p>
+            </div>
+          `;
+        } else {
+          myBadges.forEach(badge => {
+            const el = document.createElement("div");
+            el.className = "badge-item";
+            el.innerHTML = `
+              <span class="badge-icon">${badge.icon}</span>
+              <span class="badge-name">${badge.name}</span>
+            `;
+            badgeContainer.appendChild(el);
+          });
+        }
+
+        // Active Challenges Render
+        const challengeContainer = document.getElementById("emp-challenges-container");
+        challengeContainer.innerHTML = "";
+        if (myChallenges.length === 0) {
+          challengeContainer.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px 0;">No active challenges.</div>`;
+        } else {
+          myChallenges.forEach(c => {
+            const ch = db.challenges.find(x => x.id === c.challengeId);
+            if (!ch) return;
+
+            let tone = "neutral";
+            if (c.approval === "Approved") tone = "green";
+            if (c.approval === "Pending" || c.approval === "Under Review") tone = "gold";
+
+            const el = document.createElement("div");
+            el.innerHTML = `
+              <div class="flex justify-between items-center" style="margin-bottom: 4px;">
+                <span style="font-size: 13.5px; font-weight: 600;">${ch.title}</span>
+                <span class="pill pill-${tone}">${c.approval}</span>
+              </div>
+              <div class="progress-container">
+                <div class="progress-bar" style="width: ${c.progress}%; background: var(--forest);"></div>
+              </div>
+            `;
+            challengeContainer.appendChild(el);
+          });
+        }
+
+        // Pending Policies Acknowledgements
+        const myAcks = db.acknowledgements.filter(a => a.employeeId === me.id).map(a => a.policyId);
+        const pendingPolicies = db.policies.filter(p => p.status === "Published" && !myAcks.includes(p.id));
+        const policyContainer = document.getElementById("emp-policies-container");
+        policyContainer.innerHTML = "";
+        if (pendingPolicies.length === 0) {
+          policyContainer.innerHTML = `
+            <div style="text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px 0; display: flex; flex-direction: column; align-items: center; gap: 6px;">
+              <i data-lucide="check-circle-2" style="color: var(--forest); width: 22px; height: 22px;"></i>
+              All policies acknowledged.
+            </div>
+          `;
+        } else {
+          pendingPolicies.forEach(p => {
+            const el = document.createElement("div");
+            el.style.display = "flex";
+            el.style.justifyContent = "between";
+            el.style.alignItems = "center";
+            el.style.padding = "8px 12px";
+            el.style.borderRadius = "10px";
+            el.style.background = "rgba(219,83,59,0.06)";
+            el.style.border = "1px solid rgba(219,83,59,0.15)";
+            el.innerHTML = `
+              <div style="flex: 1;">
+                <p style="font-size: 13px; font-weight: 600; color: #ffffff;">${p.title}</p>
+                <p style="font-size: 11px; color: var(--text-muted); margin-top: 1px;">Version ${p.version}</p>
+              </div>
+              <a href="governance.html" class="btn btn-sm btn-primary" style="padding: 4px 8px; font-size: 11px;">Review</a>
+            `;
+            policyContainer.appendChild(el);
+          });
+        }
+
+        // My CSR Activities Table
+        const csrTbody = document.getElementById("emp-csr-tbody");
+        csrTbody.innerHTML = "";
+        const myParticipation = db.participation.filter(p => p.employeeId === me.id);
+        if (myParticipation.length === 0) {
+          csrTbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 30px;">No CSR activities joined. Go to the Social tab to participate.</td></tr>`;
+        } else {
+          myParticipation.forEach(p => {
+            const act = db.csrActivities.find(a => a.id === p.activityId);
+            if (!act) return;
+
+            let tone = "neutral";
+            if (p.approvalStatus === "Approved") tone = "green";
+            if (p.approvalStatus === "Pending") tone = "gold";
+            if (p.approvalStatus === "Rejected") tone = "red";
+
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td><strong>${act.title}</strong><div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">${act.category}</div></td>
+              <td><span class="pill pill-gold">${act.points} Pts</span></td>
+              <td>${p.proof ? `<span style="color: var(--forest); font-size: 12px;"><i data-lucide="upload" style="width: 12px; height: 12px; vertical-align: middle; margin-right: 4px;"></i>${p.proof}</span>` : '—'}</td>
+              <td><span class="pill pill-${tone}">${p.approvalStatus}</span></td>
+            `;
+            csrTbody.appendChild(row);
+          });
+        }
+      }
+
+      // Re-trigger lucide icons
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+    });
+  </script>
+</body>
+</html>
