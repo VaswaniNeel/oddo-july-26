@@ -1,0 +1,244 @@
+datasource db {
+  provider = "mysql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Department {
+  id                 String              @id
+  name               String
+  code               String
+  head               String
+  parentId           String              @default("")
+  employeeCount      Int                 @default(0)
+  status             String              @default("Active")
+  employees          Employee[]
+  carbonTransactions CarbonTransaction[]
+  goals              Goal[]
+  complianceIssues   ComplianceIssue[]
+}
+
+model Employee {
+  id                    String                 @id
+  name                  String
+  email                 String?                @unique
+  passwordHash          String?
+  departmentId          String?
+  role                  String                 @default("employee")
+  xp                    Int                    @default(0)
+  points                Int                    @default(0)
+  avatar                String
+  createdAt             DateTime               @default(now())
+  department            Department?            @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  carbonTransactions    CarbonTransaction[]
+  participations        Participation[]
+  acknowledgements      Acknowledgement[]
+  challengeParticipations ChallengeParticipation[]
+  badges                EmployeeBadge[]
+  redemptions           Redemption[]
+}
+
+model EmissionFactor {
+  id                 String              @id
+  name               String
+  unit               String
+  factor             Float
+  source             String
+  carbonTransactions CarbonTransaction[]
+}
+
+model CarbonTransaction {
+  id             String         @id
+  departmentId   String
+  factorId       String
+  source         String
+  units          Float
+  emissions      Float
+  date           String
+  createdBy      String?
+  createdAt      DateTime       @default(now())
+  department     Department     @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  factor         EmissionFactor @relation(fields: [factorId], references: [id])
+  creator        Employee?      @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+}
+
+model Goal {
+  id           String     @id
+  name         String
+  departmentId String
+  baseline     Int        @default(100)
+  target       Int
+  progress     Int        @default(0)
+  deadline     String
+  status       String     @default("At Risk")
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+}
+
+model Policy {
+  id               String            @id
+  title            String
+  version          String
+  description      String
+  status           String            @default("Draft")
+  createdAt        String
+  acknowledgements Acknowledgement[]
+}
+
+model Audit {
+  id         String @id
+  title      String
+  department String
+  date       String
+  findings   Int    @default(0)
+  status     String
+}
+
+model ComplianceIssue {
+  id           String     @id
+  title        String
+  severity     String
+  owner        String
+  dueDate      String
+  status       String     @default("Open")
+  description  String
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+}
+
+model CsrActivity {
+  id             String          @id
+  title          String
+  category       String
+  description    String
+  date           String
+  points         Int
+  status         String
+  participations Participation[]
+}
+
+model Participation {
+  id             String      @id
+  activityId     String
+  employeeId     String
+  proof          String      @default("")
+  approvalStatus String      @default("Pending")
+  pointsEarned   Int         @default(0)
+  completionDate String      @default("")
+  activity       CsrActivity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  employee       Employee    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+model Acknowledgement {
+  id            String   @id
+  policyId      String
+  employeeId    String
+  acknowledgedAt String
+  policy        Policy   @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  employee      Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+model Challenge {
+  id               String                 @id
+  title            String
+  category         String
+  description      String
+  xp               Int
+  difficulty       String
+  evidenceRequired Boolean                @default(false)
+  deadline         String
+  status           String
+  participations   ChallengeParticipation[]
+}
+
+model ChallengeParticipation {
+  id          String    @id
+  challengeId String
+  employeeId  String
+  progress    Int       @default(0)
+  proof       String    @default("")
+  approval    String    @default("Pending")
+  xpAwarded   Int       @default(0)
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  employee    Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+model Badge {
+  id          String          @id
+  name        String
+  description String
+  unlockType  String
+  unlockValue Int
+  icon        String
+  employees   EmployeeBadge[]
+}
+
+model EmployeeBadge {
+  employeeId String
+  badgeId    String
+  unlockedAt String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  badge      Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@id([employeeId, badgeId])
+}
+
+model Reward {
+  id             String       @id
+  name           String
+  description    String
+  pointsRequired Int
+  stock          Int
+  status         String
+  redemptions    Redemption[]
+}
+
+model Redemption {
+  id          String   @id
+  employeeId  String
+  rewardId    String
+  date        String
+  pointsSpent Int
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  reward      Reward   @relation(fields: [rewardId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id       String  @id
+  audience String
+  type     String
+  message  String
+  date     String
+  read     Boolean @default(false)
+}
+
+model Product {
+  id            String  @id
+  name          String
+  weight        Float
+  carbonProfile Float
+  recyclable    Boolean
+}
+
+model BusinessOperation {
+  id           String  @id
+  type         String
+  reference    String
+  item         String
+  quantity     Float
+  unit         String
+  departmentId String
+  date         String
+  processed    Boolean @default(false)
+}
+
+model EsgConfig {
+  id               String  @id @default("default")
+  weightE          Int     @default(40)
+  weightS          Int     @default(30)
+  weightG          Int     @default(30)
+  autoEmission     Boolean @default(true)
+  evidenceRequired Boolean @default(true)
+  badgeAutoAward   Boolean @default(true)
+}
